@@ -1,0 +1,19 @@
+{
+  "name": "pdfBuilder",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate"
+  },
+  "dependencies": {
+    "core-js": "^3.15.1",
+    "interactjs": "^1.10.11",
+    "jspdf": "^2.4.0",
+    "node-sass": "^5.0.0",
+    "nuxt": "^2.15.8",
+    "sass-loader": "^10.1.1"
+  }
+}
