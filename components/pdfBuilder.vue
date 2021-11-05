@@ -1,30 +1,38 @@
 <template>
     <div class="container">
-        <div class="buttonContainer">
+        <div class="elementsCol">
             <button @click="addElement()"> Add Element </button>
             <button @click="makeSelection()">Make selection</button>
             <button @click="convertToPdf()"> Convert </button>
         </div>
 
-        <div id="pdfTemplate" class="pdfTemplate">
-            <!--
-            <div class="draggable exampleCube3"></div>
-            <div class="draggable exampleCube2"></div>
-            <div class="draggable exampleCube1"></div>
-            -->
+        <div class="templateCol">
+            <div id="pdfTemplate" class="pdfTemplate"></div>
+        </div>
+
+        <div class="informationCol">
+            <ElementList :title="'Element list'" :elementList="elementList" @listUpdate="updateElementList"/>
+            <ElementList :title="'Selection list'" :elementList="selectionList" @listUpdate="updateSelectionList"/>
         </div>
     </div>
 </template>
 
 <script>
+import ElementList from "./elementList.vue"
+
 import interact from "interactjs";
 import jsPDF from "jspdf";
 
 export default {
-    components: {  },
+    components: { ElementList },
     data(){
         return{
             snapGrid: { x: 15, y: 15 },
+            
+            isSelectionFinished: true,
+            selectedElement: 0,
+            selectionList: [],
+            elementList: [],
         }
     },
     methods:{
@@ -149,12 +157,10 @@ export default {
             Array.from(elementList).forEach(element => {
                 let zIndex = element.style.zIndex || 0;
                 element.style.zIndex = (zIndex - 1) < 0? 0: (zIndex - 1);
-                element.style.border = "";
             })
 
             const topZIndex = elementList.length;
             targetElement.style.zIndex = topZIndex;
-            targetElement.style.border = "2px solid black";
         },
 
         addElement(){           
@@ -167,10 +173,19 @@ export default {
 
             newElement.classList.add("draggable");
 
+            this.elementList.push({
+                index: this.elementList.length,
+                name: "Element #" + this.elementList.length,
+                elementRef: newElement,
+            })
+
             document.getElementById("pdfTemplate").appendChild(newElement)
         },
 
         makeSelection(){
+            if(!this.isSelectionFinished) return;
+            this.isSelectionFinished = false;
+
             const updateSelection = this.updateSelection; // change later
 
             function getCoordinates(event){
@@ -207,8 +222,9 @@ export default {
                 if(selectionStarted){
                     pdfTemplate.removeEventListener("mousemove", getDimensions);
                     selection.classList.add("draggable", "selection");
-                    
-                    console.log({...coordinates, ...dimesions})
+
+                    this.saveNewSelection(selection, {...coordinates, ...dimesions})
+                    this.isSelectionFinished = true;
 
                     controller.abort();
                     return 
@@ -241,6 +257,22 @@ export default {
         updateSelection(selection, dimesions){
             selection.style.width = dimesions.width + "px";
             selection.style.height = dimesions.height + "px";
+        },
+
+        saveNewSelection(selection, positionData){
+            this.selectionList.push({
+                index: this.selectionList.length,
+                name: "Selection #" + this.selectionList.length,
+                elementRef: selection,
+                positionData: positionData,
+            })
+        },
+
+        updateElementList(updatedList){
+            this.elementList = updatedList;
+        },
+        updateSelectionList(updatedList){
+            this.selectionList = updatedList;
         }
     },
     mounted(){
@@ -259,49 +291,10 @@ export default {
 
 /* -------------------------------------------------------------------- */
 
-@mixin cube($color, $left){
-    width: 200px;
-    height: 200px;
-
-    position: absolute;
-    left: $left;
-    background: $color;
-}
-
-.exampleCube1{
-    @include cube(red, 0px);
-}
-.exampleCube2{
-    @include cube(blue, 100px);
-}
-.exampleCube3{
-    @include cube(green, 200px);
-}
+$mainColor: #414B60;
+$lightGray: #F7F7F7;
 
 /* -------------------------------------------------------------------- */
-
-.container{
-    width: 100vw;
-    height: 100vh;
-
-    display: flex;
-    flex-direction: column;
-
-    align-items: center;
-    justify-content: center;
-
-    background: darkslategray;
-
-    & > .pdfTemplate{
-        width: 210mm;
-        min-height: 297mm;
-
-        position: relative;
-        //left: 15vw;
-
-        background-color: #FFFFFF;
-    }
-}
 
 @mixin button($baseColor, $secondaryColor){
     width: 100%;
@@ -316,35 +309,80 @@ export default {
     border: 4px solid $secondaryColor;
     border-radius: 10px;
 
-    background-color: $baseColor;
+    background-color: transparent;//$baseColor;
 
     &:hover{
         cursor: pointer;
         border-color: $baseColor;
-        background-color: $secondaryColor;
+        //background-color: $secondaryColor;
     }
 
     &:disabled{
         border-color: #666666;
-        background-color: #888888;
+        //background-color: #888888;
     }
     &:disabled:hover{
         cursor: initial;
     }
 }
 
-.buttonContainer{
-    width: 15vw;
+@mixin section($width, $background){
+    width: $width;
     height: 100vh;
 
+    background: $background;
+}
+
+@mixin flex($flexDirection, $justifyContent, $alignItems){
     display: flex;
-    flex-direction: column;
+    flex-direction: $flexDirection;
+
+    justify-content: $justifyContent;
+    align-items: $alignItems;
+}
+
+@mixin boxShadow(){
+    box-shadow: rgb(11, 50, 94) 2px 5px 16px 0px, 5px 5px 15px -30px rgba(0,0,0,0);
+}
+
+/* -------------------------------------------------------------------- */
+
+.container{
+    width: 100vw;
+    height: 100vh;
+
+    @include flex(row, center, center);
+}
+
+.templateCol{
+    @include section(60vw, $lightGray);
+    @include flex(column, center, center);
+    
+    & > .pdfTemplate{
+        @include boxShadow();
+
+        width: 210mm;
+        min-height: 297mm;
+
+        position: relative;
+
+        background-color: #FFFFFF;
+    }
+}
+
+.informationCol{
+    @include section(20vw, $mainColor);
 
     padding: 1rem;
 
-    position: absolute;
-    top: 0;
-    left: 0;
+    color: white;
+}
+
+.elementsCol{
+    @include section(20vw, $mainColor);
+    @include flex(column, initial, initial);
+
+    padding: 1rem;
 
     button{
         @include button(#1EA823, #27DB2C);
