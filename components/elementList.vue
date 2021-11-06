@@ -18,21 +18,23 @@ export default {
     },
     data(){
         return{
-            selectedElement: ""
+            
         }
     },
     methods:{
-        editElement(selectedElement){
-            this.selectedElement = selectedElement;
-
-            console.log(this.elementList[selectedElement])
+        editElement(index){
+            const element = this.elementList[index]
+            this.$emit("elementSelected", element);
         },
         deleteElement(index){
             const element = this.elementList[index].elementRef
             document.getElementById("pdfTemplate").removeChild(element);
 
             let updatedList = this.elementList.filter(elem => elem.index != index)
-            updatedList.forEach((elem, i) => elem.index = i);
+            updatedList.forEach((elem, i) => {
+                elem.elementRef.dataset.index = i;
+                elem.index = i;
+            });
 
             this.$emit("listUpdate", updatedList);
         }

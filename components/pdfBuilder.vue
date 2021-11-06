@@ -11,26 +11,32 @@
         </div>
 
         <div class="informationCol">
-            <ElementList :title="'Element list'" :elementList="elementList" @listUpdate="updateElementList"/>
-            <ElementList :title="'Selection list'" :elementList="selectionList" @listUpdate="updateSelectionList"/>
+            <div>
+                <ElementList :title="'Element list'" :elementList="elementList" @listUpdate="updateElementList" @elementSelected="elementSelected"/>
+                <ElementList :title="'Selection list'" :elementList="selectionList" @listUpdate="updateSelectionList" @elementSelected="elementSelected"/>
+            </div>
+            <div>
+                <EditElement :element="selectedElement"/>
+            </div>
         </div>
     </div>
 </template>
 
 <script>
 import ElementList from "./elementList.vue"
+import EditElement from "./editElement.vue"
 
 import interact from "interactjs";
 import jsPDF from "jspdf";
 
 export default {
-    components: { ElementList },
+    components: { ElementList, EditElement },
     data(){
         return{
             snapGrid: { x: 15, y: 15 },
             
             isSelectionFinished: true,
-            selectedElement: 0,
+            selectedElement: {},
             selectionList: [],
             elementList: [],
         }
@@ -93,11 +99,13 @@ export default {
         },
         
         dragMoveListener (event) {
-            const target = event.target
+            const target = event.target;
             
             // keep the dragged position in the data-x/data-y attributes
             const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx
             const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy
+
+            this.updatePositionData(target, { x, y })
 
             // translate the element
             target.style.transform = 'translate(' + x + 'px, ' + y + 'px)'
@@ -108,13 +116,18 @@ export default {
         },
 
         resizeHandler(event) {
-            var target = event.target
-            var x = (parseFloat(target.getAttribute('data-x')) || 0)
-            var y = (parseFloat(target.getAttribute('data-y')) || 0)
+            const target = event.target
+            let x = (parseFloat(target.getAttribute('data-x')) || 0)
+            let y = (parseFloat(target.getAttribute('data-y')) || 0)
 
             // update the element's style
-            target.style.width = event.rect.width + 'px'
-            target.style.height = event.rect.height + 'px'
+            const width = event.rect.width;
+            const height = event.rect.height;
+
+            this.updatePositionData(target, { width, height })
+
+            target.style.width = width + 'px';
+            target.style.height = height + 'px';
 
             // translate when resizing from top or left edges
             x += event.deltaRect.left
@@ -173,8 +186,10 @@ export default {
             newElement.style.backgroundColor = "#" + Math.floor(Math.random()*16777215).toString(16);
 
             newElement.classList.add("draggable");
+            newElement.dataset.index = this.elementList.length;
 
             this.elementList.push({
+                type: "element",
                 index: this.elementList.length,
                 name: "Element #" + this.elementList.length,
                 elementRef: newElement,
@@ -182,8 +197,6 @@ export default {
 
             document.getElementById("pdfTemplate").appendChild(newElement)
         },
-
-
 
         makeSelection(){
             if(!this.isSelectionFinished) return;
@@ -270,7 +283,10 @@ export default {
         },
 
         saveNewSelection(selection, positionData){
+            selection.dataset.index = this.selectionList.length;
+
             this.selectionList.push({
+                type: "selection",
                 index: this.selectionList.length,
                 name: "Selection #" + this.selectionList.length,
                 elementRef: selection,
@@ -283,6 +299,18 @@ export default {
         },
         updateSelectionList(updatedList){
             this.selectionList = updatedList;
+        },
+
+        elementSelected(element){
+            this.selectedElement = element
+        },
+
+        updatePositionData(elem, newData){
+            const isSelection = elem.classList.contains("selection")
+            if(!isSelection) return;
+
+            const element = this.selectionList[elem.dataset.index];
+            Object.keys(newData).forEach(key => element.positionData[key] = newData[key])
         }
     },
     mounted(){
