@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h4>{{title}}</h4>
+        <h2>{{title}}</h2>
         <ul v-if="elementList" class="elementList">
             <li :key="element.index" :element="element" v-for="element in elementList">
                 <button @click="editElement(element.index)">{{element.name}}</button>
@@ -41,9 +41,18 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import "../assets/style.scss";
 
-ul{
+.elementList{
+    
     list-style-type: none;
+    
+    & > li{
+        @include flex(row, space-between, initial);
+        
+        margin: 1rem 0;
+        padding: 0 1rem;
+    }
 }
 
 

@@ -163,6 +163,7 @@ export default {
             targetElement.style.zIndex = topZIndex;
         },
 
+        // Temporary for testing 
         addElement(){           
             const newElement = document.createElement("div");
 
@@ -181,6 +182,8 @@ export default {
 
             document.getElementById("pdfTemplate").appendChild(newElement)
         },
+
+
 
         makeSelection(){
             if(!this.isSelectionFinished) return;
@@ -218,11 +221,14 @@ export default {
             const controller = new AbortController(); 
             let selectionStarted = false;
 
+            this.togglePointerEvents(pdfTemplate, false);
+
             pdfTemplate.addEventListener("click", (event) => {
                 if(selectionStarted){
                     pdfTemplate.removeEventListener("mousemove", getDimensions);
                     selection.classList.add("draggable", "selection");
 
+                    this.togglePointerEvents(pdfTemplate, true);
                     this.saveNewSelection(selection, {...coordinates, ...dimesions})
                     this.isSelectionFinished = true;
 
@@ -236,6 +242,10 @@ export default {
 
                 pdfTemplate.addEventListener('mousemove',  getDimensions);
             }, { signal: controller.signal })
+        },
+
+        togglePointerEvents(parentElement, boolValue){
+            Array.from(parentElement.children).forEach(child => child.style.pointerEvents = boolValue? "auto": "none")
         },
 
         createSelection(coordinates){
@@ -282,70 +292,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
-*{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-/* -------------------------------------------------------------------- */
-
-$mainColor: #414B60;
-$lightGray: #F7F7F7;
-
-/* -------------------------------------------------------------------- */
-
-@mixin button($baseColor, $secondaryColor){
-    width: 100%;
-
-    font-weight: 600;
-    font-size: 20px;
-    color: white;
-
-    padding: 0.75rem 0;
-    margin-bottom: 1rem;
-
-    border: 4px solid $secondaryColor;
-    border-radius: 10px;
-
-    background-color: transparent;//$baseColor;
-
-    &:hover{
-        cursor: pointer;
-        border-color: $baseColor;
-        //background-color: $secondaryColor;
-    }
-
-    &:disabled{
-        border-color: #666666;
-        //background-color: #888888;
-    }
-    &:disabled:hover{
-        cursor: initial;
-    }
-}
-
-@mixin section($width, $background){
-    width: $width;
-    height: 100vh;
-
-    background: $background;
-}
-
-@mixin flex($flexDirection, $justifyContent, $alignItems){
-    display: flex;
-    flex-direction: $flexDirection;
-
-    justify-content: $justifyContent;
-    align-items: $alignItems;
-}
-
-@mixin boxShadow(){
-    box-shadow: rgb(11, 50, 94) 2px 5px 16px 0px, 5px 5px 15px -30px rgba(0,0,0,0);
-}
-
-/* -------------------------------------------------------------------- */
+@import "../assets/style.scss";
 
 .container{
     width: 100vw;
