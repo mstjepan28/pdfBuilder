@@ -4,7 +4,6 @@
         <ul v-if="elementList" class="elementList">
             <li :key="element.index" :element="element" v-for="element in elementList">
                 <button @click="editElement(element.index)">{{element.name}}</button>
-                <button @click="deleteElement(element.index)"> Delete </button>
             </li>
         </ul>
     </div>
@@ -26,18 +25,6 @@ export default {
             const element = this.elementList[index]
             this.$emit("elementSelected", element);
         },
-        deleteElement(index){
-            const element = this.elementList[index].elementRef
-            document.getElementById("pdfTemplate").removeChild(element);
-
-            let updatedList = this.elementList.filter(elem => elem.index != index)
-            updatedList.forEach((elem, i) => {
-                elem.elementRef.dataset.index = i;
-                elem.index = i;
-            });
-
-            this.$emit("listUpdate", updatedList);
-        }
     },
 }
 </script>

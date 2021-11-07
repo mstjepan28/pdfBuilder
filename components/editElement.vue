@@ -1,7 +1,7 @@
 <template>
     <div>
-        <h2>Edit element</h2>
-        <div v-if="element.type == 'selection'">
+        <div v-if="element">
+            <h2>Edit element</h2>
             <h4>Position data</h4>
             
             <div class="positionData">
@@ -16,11 +16,14 @@
                 <label for="moveToggle">Element can be moved:</label>
                 <input id="moveToggle" type="checkbox" v-model="isMovable"/>
             </div>
+
+            <button @click="deleteElement(element.index)"> Delete </button>
+        </div>
         
-        </div>
         <div v-else>
-            
+            <h4>No element selected</h4>
         </div>
+
     </div>
 </template>
 
@@ -38,26 +41,28 @@ export default {
                 width: 0,
                 height: 0,
             },
-
-            
         }
     },
     computed:{
         xCordMax(){
             const pdfTemplate = document.getElementById("pdfTemplate");
-            return pdfTemplate.offsetWidth - this.positionData.width
+            const xCordMax = pdfTemplate.offsetWidth - this.positionData.width || 0;
+
+            return  xCordMax < 0? 0: xCordMax; 
         },
         yCordMax(){
             const pdfTemplate = document.getElementById("pdfTemplate");
-            return pdfTemplate.offsetHeight - this.positionData.height
+            const yCordMax = pdfTemplate.offsetHeight - this.positionData.height || 0;
+
+            return  yCordMax < 0? 0: yCordMax; 
         },
         widthDimMax(){
             const pdfTemplate = document.getElementById("pdfTemplate");
-            return pdfTemplate.offsetHeight - this.positionData.x
+            return pdfTemplate.offsetWidth - this.positionData.x || 0;
         },
         heightDimMax(){
             const pdfTemplate = document.getElementById("pdfTemplate");
-            return pdfTemplate.offsetHeight - this.positionData.y
+            return pdfTemplate.offsetHeight - this.positionData.y || 0;
         }
     },
     methods:{
@@ -85,10 +90,10 @@ export default {
                 this.positionData[key] = value;
             });
 
-            this.positionData.x = this.positionData.x > this.xCordMax? this.xCordMax: this.positionData.x;
-            this.positionData.y = this.positionData.y > this.yCordMax? this.yCordMax: this.positionData.y;
-            this.positionData.width = this.positionData.width > this.widthDimMax? this.widthDimMax: this.positionData.width;
-            this.positionData.height = this.positionData.height > this.heightDimMax? this.heightDimMax: this.positionData.height;
+            this.positionData.x = (this.positionData.x > this.xCordMax? this.xCordMax: this.positionData.x)// || 0;
+            this.positionData.y = (this.positionData.y > this.yCordMax? this.yCordMax: this.positionData.y)// || 0;
+            this.positionData.width = (this.positionData.width > this.widthDimMax? this.widthDimMax: this.positionData.width)// || 0;
+            this.positionData.height = (this.positionData.height > this.heightDimMax? this.heightDimMax: this.positionData.height)// || 0;
         },
 
         updateElementPosition(){
@@ -105,12 +110,18 @@ export default {
         
             element.dataset.x = this.positionData.x;
             element.dataset.y = this.positionData.y;
+        },
+
+        deleteElement(){
+            this.$emit("deleteElement", this.element);
         }
     },
     watch:{
         element(){
+            if(!this.element) return;
+
             this.checkIfMovable();
-            if(this.element.type == 'selection') this.positionData = this.element.positionData;
+            this.positionData = this.element.positionData;
         },
         isMovable(){
             this.toggleMovement()

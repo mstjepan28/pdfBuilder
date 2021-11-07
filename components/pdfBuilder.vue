@@ -12,11 +12,11 @@
 
         <div class="informationCol">
             <div>
-                <ElementList :title="'Element list'" :elementList="elementList" @listUpdate="updateElementList" @elementSelected="elementSelected"/>
-                <ElementList :title="'Selection list'" :elementList="selectionList" @listUpdate="updateSelectionList" @elementSelected="elementSelected"/>
+                <ElementList :title="'Element list'" :elementList="elementList"  @elementSelected="elementSelected"/>
+                <ElementList :title="'Selection list'" :elementList="selectionList" @elementSelected="elementSelected"/>
             </div>
             <div>
-                <EditElement :element="selectedElement"/>
+                <EditElement :element="selectedElement" @deleteElement="updateList"/>
             </div>
         </div>
     </div>
@@ -33,10 +33,10 @@ export default {
     components: { ElementList, EditElement },
     data(){
         return{
-            snapGrid: { x: 15, y: 15 },
+            snapGrid: { x: 16, y: 16 },
             
             isSelectionFinished: true,
-            selectedElement: {},
+            selectedElement: null,
             selectionList: [],
             elementList: [],
         }
@@ -59,14 +59,7 @@ export default {
                 },
                 modifiers: [
                     // Element cannot grow outside of the parent
-                    interact.modifiers.restrictEdges({
-                        outer: 'parent'
-                    }),
-
-                    // Smallest width/height of the element
-                    interact.modifiers.restrictSize({
-                        min: { width: 100, height: 50 }
-                    })
+                    interact.modifiers.restrictEdges({ outer: 'parent' }),
                 ],
 
             })
@@ -84,10 +77,7 @@ export default {
                     }),
 
                     // Keeps the element inside the parent
-                    interact.modifiers.restrictRect({
-                        restriction: 'parent',
-                        endOnly: true
-                    })
+                    interact.modifiers.restrictRect({ restriction: 'parent' })
                 ],
 
                 listeners: {
@@ -180,6 +170,9 @@ export default {
         addElement(){           
             const newElement = document.createElement("div");
 
+            newElement.dataset.x = 0;
+            newElement.dataset.y = 0;
+
             newElement.style.width = "200px";
             newElement.style.height = "200px";
             newElement.style.position = "absolute";
@@ -193,6 +186,7 @@ export default {
                 index: this.elementList.length,
                 name: "Element #" + this.elementList.length,
                 elementRef: newElement,
+                positionData: { x: 0, y: 0, width: 200, height: 200 }
             })
 
             document.getElementById("pdfTemplate").appendChild(newElement)
@@ -219,8 +213,8 @@ export default {
                 const height = Math.trunc(event.clientY - rect.top) - coordinates.y;
 
                 dimesions = {
-                    "width": width < 10? 10: width,
-                    "height": height < 10? 10: height
+                    "width": width,
+                    "height": height
                 }
                 updateSelection(selection, dimesions)
             }
@@ -295,10 +289,22 @@ export default {
         },
 
         updateElementList(updatedList){
+            this.selectedElement = null;
             this.elementList = updatedList;
         },
-        updateSelectionList(updatedList){
-            this.selectionList = updatedList;
+
+        updateList(element){
+            document.getElementById("pdfTemplate").removeChild(element.elementRef);
+
+            let updatedList = this[element.type + "List"].filter(elem => elem != element);
+
+            updatedList.forEach((elem, i) => {
+                elem.elementRef.dataset.index = i;
+                elem.index = i;
+            });
+            this[element.type + "List"] = updatedList;
+
+            this.selectedElement = null;
         },
 
         elementSelected(element){
@@ -306,10 +312,9 @@ export default {
         },
 
         updatePositionData(elem, newData){
-            const isSelection = elem.classList.contains("selection")
-            if(!isSelection) return;
+            const list = elem.classList.contains("selection")? this.selectionList: this.elementList;
 
-            const element = this.selectionList[elem.dataset.index];
+            const element = list[elem.dataset.index];
             Object.keys(newData).forEach(key => element.positionData[key] = newData[key])
         }
     },
