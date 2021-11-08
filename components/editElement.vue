@@ -44,6 +44,8 @@ export default {
         }
     },
     computed:{
+        /* ------------------------------------------------------------ */
+
         xCordMax(){
             const pdfTemplate = document.getElementById("pdfTemplate");
             const xCordMax = pdfTemplate.offsetWidth - this.positionData.width || 0;
@@ -63,14 +65,18 @@ export default {
         heightDimMax(){
             const pdfTemplate = document.getElementById("pdfTemplate");
             return pdfTemplate.offsetHeight - this.positionData.y || 0;
-        }
+        },
+
+        /* ------------------------------------------------------------ */
     },
     methods:{
+        // If element has class 'draggable' then its draggable
         checkIfMovable(){
             if(!this.element.elementRef) return;
             this.isMovable = this.element.elementRef.classList.contains("draggable");
         },
         
+        // Add/remove the 'draggable' class from element and in that way toggle its movement
         toggleMovement(){
             const elemRef = this.element.elementRef;
             
@@ -81,26 +87,25 @@ export default {
             toggle[this.isMovable]();
         },
 
+        // Validate inputed position data. If its not valid set the value to the upper/lower bound.
         validatePositionData(){
             Object.keys(this.positionData).forEach(key => {
                 let value = parseInt(this.positionData[key])
-                
                 value = value < 0? 0: value;
                 
                 this.positionData[key] = value;
             });
 
-            this.positionData.x = (this.positionData.x > this.xCordMax? this.xCordMax: this.positionData.x)// || 0;
-            this.positionData.y = (this.positionData.y > this.yCordMax? this.yCordMax: this.positionData.y)// || 0;
-            this.positionData.width = (this.positionData.width > this.widthDimMax? this.widthDimMax: this.positionData.width)// || 0;
-            this.positionData.height = (this.positionData.height > this.heightDimMax? this.heightDimMax: this.positionData.height)// || 0;
+            this.positionData.x = this.positionData.x > this.xCordMax? this.xCordMax: this.positionData.x;
+            this.positionData.y = this.positionData.y > this.yCordMax? this.yCordMax: this.positionData.y;
+            this.positionData.width = this.positionData.width > this.widthDimMax? this.widthDimMax: this.positionData.width;
+            this.positionData.height = this.positionData.height > this.heightDimMax? this.heightDimMax: this.positionData.height;
         },
 
+        // Update elements position based on the input values
         updateElementPosition(){
             if(!this.element || !this.element.positionData) return;
 
-            
-            
             this.validatePositionData();
             const element = this.element.elementRef;
 
@@ -117,15 +122,19 @@ export default {
         }
     },
     watch:{
+        // When selected element gets changed, check its movable 
         element(){
             if(!this.element) return;
 
             this.checkIfMovable();
             this.positionData = this.element.positionData;
         },
+
         isMovable(){
             this.toggleMovement()
         },
+
+        // Deep watcher for position values
         positionData:{
             handler(){
                 this.updateElementPosition()

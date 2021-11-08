@@ -65,11 +65,11 @@ export default {
             })
             .draggable({
                 inertia: true,
-                autoScroll: true,
                 
                 modifiers: [
                     interact.modifiers.snap({
                         targets: [
+                            // Snap elements in place when dragged
                             interact.snappers.grid(thisRef.snapGrid)
                         ],
                         range: Infinity,
@@ -95,18 +95,20 @@ export default {
             const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx
             const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy
 
+            // update position data of object
             this.updatePositionData(target, { x, y })
 
-            // translate the element
             target.style.transform = 'translate(' + x + 'px, ' + y + 'px)'
 
-            // update the posiion attributes
+            // update the position attributes
             target.setAttribute('data-x', x)
             target.setAttribute('data-y', y)
         },
 
         resizeHandler(event) {
             const target = event.target
+
+            // Get the previous coordinates of the object
             let x = (parseFloat(target.getAttribute('data-x')) || 0)
             let y = (parseFloat(target.getAttribute('data-y')) || 0)
 
@@ -131,6 +133,7 @@ export default {
 
         /* ------------------------------------------------------------ */
 
+        // Converts given html to a pdf blob
         convertToPdf(){
             const doc = new jsPDF();
             const pdfDoc = document.getElementById("pdfTemplate");
@@ -154,6 +157,9 @@ export default {
 
         /* ------------------------------------------------------------ */
         
+        // targetElement - html element
+        // Sets the zIndex of the taget element to be highest in the parent. 
+        //  zIndexes of other elements get decresed by 1(lower boundery on 0)
         shiftFocus(targetElement){
             const elementList = document.querySelectorAll("div.pdfTemplate>div");
 
@@ -251,10 +257,16 @@ export default {
             }, { signal: controller.signal })
         },
 
+        // parentElement - html element whos childrens pointer events will be toggled
+        // boolValue - true(active pointer events) or false(inactive pointer events)
+        // Used to make a selection over/inside other elements inside parent
         togglePointerEvents(parentElement, boolValue){
             Array.from(parentElement.children).forEach(child => child.style.pointerEvents = boolValue? "auto": "none")
         },
 
+        // coordinates - { x: num, y: num }
+        // Creates a new div, sets its position to the given coordinates inside parent, sets 
+        //  its style and adds it to the dom  
         createSelection(coordinates){
             const newSelection = document.createElement("div");
             
@@ -271,11 +283,17 @@ export default {
             return newSelection;
         },
 
+        // selection - html element
+        // dimensions - { width: num, height: num }
+        // Updates the width and height of the given selection
         updateSelection(selection, dimesions){
             selection.style.width = dimesions.width + "px";
             selection.style.height = dimesions.height + "px";
         },
 
+        // selection - html element
+        // positionData - { x: num, y: num, widht: num, height: num}
+        // Set the data-index to the last element of the list and push the selection to the selection list
         saveNewSelection(selection, positionData){
             selection.dataset.index = this.selectionList.length;
 
@@ -288,14 +306,11 @@ export default {
             })
         },
 
-        updateElementList(updatedList){
-            this.selectedElement = null;
-            this.elementList = updatedList;
-        },
-
+        // element - js object to remove from dom/list
+        // Remove element from dom and from the list. Update the index of each elemet in the list and because the
+        //  element can only be deleted once its selected, set the selected element to null
         updateList(element){
             document.getElementById("pdfTemplate").removeChild(element.elementRef);
-
             let updatedList = this[element.type + "List"].filter(elem => elem != element);
 
             updatedList.forEach((elem, i) => {
@@ -311,10 +326,14 @@ export default {
             this.selectedElement = element
         },
 
+        // elem - html element
+        // newData - either (x ,y) or (width, height)
+        // Get the list for either the selections or elements based on the class elem. Get the element from the list
+        //  based on the data-index atribute. Replace the old (x ,y) or (width, height) with new ones
         updatePositionData(elem, newData){
-            const list = elem.classList.contains("selection")? this.selectionList: this.elementList;
-
+            const list = elem.classList.contains("selection")? this.selectionList: this.elementList; 
             const element = list[elem.dataset.index];
+
             Object.keys(newData).forEach(key => element.positionData[key] = newData[key])
         }
     },
