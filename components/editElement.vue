@@ -2,8 +2,9 @@
     <div>
         <div v-if="element">
             <h2>Edit element</h2>
+
             <h4>Position data</h4>
-            
+
             <div class="positionData">
                 X: <input type="number" v-model="positionData.x">
                 Y: <input type="number" v-model="positionData.y">
@@ -15,6 +16,24 @@
             <div class="toggleMovement">
                 <label for="moveToggle">Element can be moved:</label>
                 <input id="moveToggle" type="checkbox" v-model="isMovable"/>
+            </div>
+
+            <h4>Static content</h4>
+
+            <div>
+                <label for="isStatic">Is static value</label>
+                <input id="isStatic" type="checkbox" v-model="element.isStatic"/>
+            </div>
+            
+            <div v-if="element.isStatic">
+                <label for=""></label>
+                <input type="text" v-model="staticContent"/>
+            </div>
+            <div v-else>
+                <label for="variables">Choose a variable:</label>
+                <select id="variables" v-model="element.variable">
+                    <option :key="variable.variable" v-for="variable in templateVariables" :value="variable.variable">{{variable.label}}</option>
+                </select>
             </div>
 
             <button @click="deleteElement(element.index)"> Delete </button>
@@ -35,12 +54,15 @@ export default {
     data(){
         return{
             isMovable: null,
-            positionData: {
-                x: 0,
-                y: 0,
-                width: 0,
-                height: 0,
-            },
+            staticContent: "",
+            positionData: {},
+
+            templateVariables: [
+                {label: "ID", variable: "id"},
+                {label: "First name", variable: "first_name"},
+                {label: "Last name", variable: "last_name"},
+                {label: "Email", variable: "email"}    
+            ] 
         }
     },
     computed:{
@@ -119,7 +141,15 @@ export default {
 
         deleteElement(){
             this.$emit("deleteElement", this.element);
+        },
+
+        updateStaticContent(){
+            const element = this.element.elementRef;
+            element.innerHTML = this.staticContent
+
+            this.element.staticContent = this.staticContent;
         }
+
     },
     watch:{
         // When selected element gets changed, check its movable 
@@ -132,6 +162,10 @@ export default {
 
         isMovable(){
             this.toggleMovement()
+        },
+
+        staticContent(){
+            this.updateStaticContent();
         },
 
         // Deep watcher for position values

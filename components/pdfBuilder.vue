@@ -1,9 +1,8 @@
 <template>
     <div class="container">
         <div class="elementsCol">
-            <button @click="addElement()"> Add Element </button>
             <button @click="makeSelection()">Make selection</button>
-            <button @click="convertToPdf()"> Convert </button>
+            <ConvertPdfBtn :selectionList="selectionList" />
         </div>
 
         <div class="templateCol">
@@ -11,10 +10,8 @@
         </div>
 
         <div class="informationCol">
-            <div>
-                <ElementList :title="'Element list'" :elementList="elementList"  @elementSelected="elementSelected"/>
-                <ElementList :title="'Selection list'" :elementList="selectionList" @elementSelected="elementSelected"/>
-            </div>
+            <ElementList :title="'Selection list'" :elementList="selectionList" @elementSelected="elementSelected"/>
+            
             <div>
                 <EditElement :element="selectedElement" @deleteElement="updateList"/>
             </div>
@@ -25,12 +22,12 @@
 <script>
 import ElementList from "./elementList.vue"
 import EditElement from "./editElement.vue"
+import ConvertPdfBtn from "./convertPdfBtn.vue"
 
 import interact from "interactjs";
-import jsPDF from "jspdf";
 
 export default {
-    components: { ElementList, EditElement },
+    components: { ElementList, EditElement, ConvertPdfBtn },
     data(){
         return{
             snapGrid: { x: 16, y: 16 },
@@ -38,7 +35,6 @@ export default {
             isSelectionFinished: true,
             selectedElement: null,
             selectionList: [],
-            elementList: [],
         }
     },
     methods:{
@@ -132,30 +128,6 @@ export default {
         },
 
         /* ------------------------------------------------------------ */
-
-        // Converts given html to a pdf blob
-        convertToPdf(){
-            const doc = new jsPDF();
-            const pdfDoc = document.getElementById("pdfTemplate");
-
-            try{
-                doc.html(pdfDoc, {
-                    callback: doc => {
-                        const blobPDF =  new Blob([ doc.output() ], { type : 'application/pdf'});
-                        const blobUrl = URL.createObjectURL(blobPDF);
-
-                        window.open(blobUrl);
-                    },
-                    width: 210, // 210mm 
-                    windowWidth: pdfDoc.offsetWidth // width of the "div.pdfTemplate"
-                    
-                });
-            }catch(err){
-                console.log(err)
-            }
-        },
-
-        /* ------------------------------------------------------------ */
         
         // targetElement - html element
         // Sets the zIndex of the taget element to be highest in the parent. 
@@ -172,37 +144,11 @@ export default {
             targetElement.style.zIndex = topZIndex;
         },
 
-        // Temporary for testing 
-        addElement(){           
-            const newElement = document.createElement("div");
-
-            newElement.dataset.x = 0;
-            newElement.dataset.y = 0;
-
-            newElement.style.width = "200px";
-            newElement.style.height = "200px";
-            newElement.style.position = "absolute";
-            newElement.style.backgroundColor = "#" + Math.floor(Math.random()*16777215).toString(16);
-
-            newElement.classList.add("draggable");
-            newElement.dataset.index = this.elementList.length;
-
-            this.elementList.push({
-                type: "element",
-                index: this.elementList.length,
-                name: "Element #" + this.elementList.length,
-                elementRef: newElement,
-                positionData: { x: 0, y: 0, width: 200, height: 200 }
-            })
-
-            document.getElementById("pdfTemplate").appendChild(newElement)
-        },
-
         makeSelection(){
             if(!this.isSelectionFinished) return;
             this.isSelectionFinished = false;
 
-            const updateSelection = this.updateSelection; // change later
+            const updateSelection = this.updateSelection;
 
             function getCoordinates(event){
                 const rect = event.target.getBoundingClientRect();
@@ -298,11 +244,15 @@ export default {
             selection.dataset.index = this.selectionList.length;
 
             this.selectionList.push({
-                type: "selection",
                 index: this.selectionList.length,
                 name: "Selection #" + this.selectionList.length,
                 elementRef: selection,
                 positionData: positionData,
+
+                type: "text",
+                variable: null,
+                isStatic: true,
+                staticContent: "",
             })
         },
 
@@ -311,13 +261,13 @@ export default {
         //  element can only be deleted once its selected, set the selected element to null
         updateList(element){
             document.getElementById("pdfTemplate").removeChild(element.elementRef);
-            let updatedList = this[element.type + "List"].filter(elem => elem != element);
+            let updatedList = this.selectionList.filter(elem => elem != element);
 
             updatedList.forEach((elem, i) => {
                 elem.elementRef.dataset.index = i;
                 elem.index = i;
             });
-            this[element.type + "List"] = updatedList;
+            this.selectionList = updatedList;
 
             this.selectedElement = null;
         },
@@ -328,12 +278,9 @@ export default {
 
         // elem - html element
         // newData - either (x ,y) or (width, height)
-        // Get the list for either the selections or elements based on the class elem. Get the element from the list
-        //  based on the data-index atribute. Replace the old (x ,y) or (width, height) with new ones
+        // Get the element from the list based on the data-index atribute. Replace the old (x ,y) or (width, height) with new ones
         updatePositionData(elem, newData){
-            const list = elem.classList.contains("selection")? this.selectionList: this.elementList; 
-            const element = list[elem.dataset.index];
-
+            const element = this.selectionList[elem.dataset.index];
             Object.keys(newData).forEach(key => element.positionData[key] = newData[key])
         }
     },
@@ -387,4 +334,5 @@ export default {
         @include button(#1EA823, #27DB2C);
     }
 }
+
 </style>

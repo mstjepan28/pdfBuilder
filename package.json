@@ -11,6 +11,7 @@
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^1.2.36",
     "@fortawesome/free-solid-svg-icons": "^5.15.4",
+    "axios": "^0.24.0",
     "core-js": "^3.15.1",
     "interactjs": "^1.10.11",
     "jspdf": "^2.4.0",
