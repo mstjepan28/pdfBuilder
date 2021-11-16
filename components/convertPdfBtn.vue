@@ -45,12 +45,27 @@ export default {
         
         filterList(){
             return this.selectionList.map(element => {
+                const normalisedPositionData = this.normalisePositionData(element.positionData)
                 return {
-                    positionData: element.positionData,
+                    positionData: normalisedPositionData,
                     variable: element.variable,
                     type: element.type
                 }
             })
+        },
+
+        normalisePositionData(positionData){
+            const pdfTemplate = document.querySelector("div.pdfTemplate")
+            const width = pdfTemplate.offsetWidth;
+            const height = pdfTemplate.offsetHeight;
+
+            return{
+                x: positionData.x / width,
+                y: positionData.y / height, 
+                width: positionData.width / width, 
+                height: positionData.height / height, 
+            }
+            
         }
     }
 }
