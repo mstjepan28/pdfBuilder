@@ -249,10 +249,12 @@ export default {
                 elementRef: selection,
                 positionData: positionData,
 
-                type: "text",
-                variable: null,
+                type: "image",
+                variable: "first_name",
                 isStatic: true,
                 staticContent: "",
+
+                internalComponent: null,
             })
         },
 

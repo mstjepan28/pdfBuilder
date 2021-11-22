@@ -26,13 +26,20 @@
             </div>
             
             <div v-if="element.isStatic">
-                <label for=""></label>
-                <input type="text" v-model="staticContent"/>
+                <label for="staticContentInput"></label>
+                <input id="staticContentInput" type="text" v-model="staticContent"/>
             </div>
             <div v-else>
                 <label for="variables">Choose a variable:</label>
                 <select id="variables" v-model="element.variable">
-                    <option :key="variable.variable" v-for="variable in templateVariables" :value="variable.variable">{{variable.label}}</option>
+                    <option :key="variable.value" v-for="variable in templateVariables" :value="variable.value">{{variable.label}}</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="elementType">Select the element type: </label>
+                <select id="elementType" v-model="elementType">
+                    <option :key="type.value" v-for="type in contentType" :value="type.value">{{type.label}}</option>
                 </select>
             </div>
 
@@ -47,22 +54,34 @@
 </template>
 
 <script>
+import ImageUpload from "./imageUpload.vue"
+import Vue from "vue"
+
 export default {
     props:{
         element: Object
     },
+    components: { ImageUpload },
     data(){
         return{
             isMovable: null,
-            staticContent: "",
             positionData: {},
 
+            staticContent: "",
+            elementType: "",
+
             templateVariables: [
-                {label: "ID", variable: "id"},
-                {label: "First name", variable: "first_name"},
-                {label: "Last name", variable: "last_name"},
-                {label: "Email", variable: "email"}    
-            ] 
+                {label: "ID", value: "id"},
+                {label: "First name", value: "first_name"},
+                {label: "Last name", value: "last_name"},
+                {label: "Email", value: "email"}    
+            ],
+
+            contentType: [
+                {label: "Image", value: "image"},
+                {label: "Text", value: "singlelineText"},
+                {label: "Paragraf", value: "multilineText"},
+            ],
         }
     },
     computed:{
@@ -145,11 +164,28 @@ export default {
 
         updateStaticContent(){
             const element = this.element.elementRef;
+
             element.innerHTML = this.staticContent
-
             this.element.staticContent = this.staticContent;
-        }
+        },
 
+        elementTypeImage(){
+            const element = this.element.elementRef;
+            const child = document.createElement("div");
+            element.appendChild(child)
+
+            const imageUploadConstructor = Vue.extend(ImageUpload)
+            const imageUploadInstance = new imageUploadConstructor({})
+
+            this.element.internalComponent = imageUploadInstance.$mount(child);
+        },
+
+        destroyComponent(){
+            document.querySelector("div.imageUploadComponent").remove();
+         
+            this.element.internalComponent.$destroy();
+            this.element.internalComponent = null;
+        }
     },
     watch:{
         // When selected element gets changed, check its movable 
@@ -157,11 +193,25 @@ export default {
             if(!this.element) return;
 
             this.checkIfMovable();
+            // TODO - highlight selected element
             this.positionData = this.element.positionData;
         },
 
         isMovable(){
             this.toggleMovement()
+        },
+
+        elementType(){
+            if(this.element.internalComponent) this.destroyComponent();
+
+            this.element.type = this.elementType;
+
+            const elementTypeHandler = {
+                image: () => this.elementTypeImage(),
+                singlelineText: () => {},
+                multilineText: () => {},
+            }
+            elementTypeHandler[this.elementType]();
         },
 
         staticContent(){

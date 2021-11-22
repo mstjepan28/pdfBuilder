@@ -32,10 +32,20 @@ export default {
 
         async postPDFTemplate(pdfTemplate){
             const route = "http://localhost:8080/postTemplate";
+            const extension = pdfTemplate.type.split('/')[1];  
+
             const selectionList = this.filterList();
+            const blobList = new Blob([JSON.stringify(selectionList)]);
+            const blobListExtension = pdfTemplate.type.split('/')[1];
+
+            let data = new FormData();
+            data.append("selectionList", blobList, "selectionList" + blobListExtension, { type: "application/json" })
+            data.append("pdfTemplate", pdfTemplate, "pdfTemplate." + extension)
+
+            const config = { header : {'Content-Type': `multipart/form-data; boundary=${data._boundary}`,} }
 
             try{
-                const responce = await axios.post( route, { pdfTemplate, selectionList });
+                const responce = await axios.post( route, data, config );
                 console.log(responce)
             }catch(error){
                 console.log(error);
@@ -43,9 +53,11 @@ export default {
         
         },
         
+        // Filter data od list elements so it contains only relevent data
         filterList(){
             return this.selectionList.map(element => {
                 const normalisedPositionData = this.normalisePositionData(element.positionData)
+                console.log(normalisedPositionData)
                 return {
                     positionData: normalisedPositionData,
                     variable: element.variable,
@@ -54,6 +66,9 @@ export default {
             })
         },
 
+
+        // This PDF and the one on the frontend do not match in dimensions so the positionData is offset. 
+        //  To fix that the positionData is the percentage of the width/height of the PDF
         normalisePositionData(positionData){
             const pdfTemplate = document.querySelector("div.pdfTemplate")
             const width = pdfTemplate.offsetWidth;
