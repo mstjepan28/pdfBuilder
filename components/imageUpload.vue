@@ -1,6 +1,6 @@
 <template>
     <div
-        class="imageUploadComponent"
+        class="imageUploadComponent internalComponent"
         @dragover.prevent="dragOver" 
         @dragleave.prevent="dragLeave"
         @drop.prevent="drop($event)"
@@ -61,18 +61,16 @@ export default {
     width: 100%;
     height: 100%;
 
-    padding: 5%;
+    padding: 5px;
 
     overflow: hidden;
     position: absolute;
 
     img{
         @include flex(column, center, center);
-
+        
         width: 100%;
         height: 100%;
-
-        background: red;
     }
 }
 

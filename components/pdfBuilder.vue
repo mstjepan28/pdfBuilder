@@ -275,7 +275,11 @@ export default {
         },
 
         elementSelected(element){
+            if(this.selectedElement) this.selectedElement.elementRef.style.border = ""
+            
             this.selectedElement = element
+
+            this.selectedElement.elementRef.style.border = "2px solid #add8e6"
         },
 
         // elem - html element

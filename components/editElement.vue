@@ -13,6 +13,15 @@
                 Height: <input type="number" v-model="positionData.height">
             </div>
 
+            <div class="elementPositioning">
+                <button @click="positionElement('xStart')">X Start</button>
+                <button @click="positionElement('xCenter')">X Center</button>
+                <button @click="positionElement('xEnd')">X End</button>
+                <button @click="positionElement('yStart')">Y Start</button>
+                <button @click="positionElement('yCenter')">Y Center</button>
+                <button @click="positionElement('yEnd')">Y End</button>
+            </div>
+
             <div class="toggleMovement">
                 <label for="moveToggle">Element can be moved:</label>
                 <input id="moveToggle" type="checkbox" v-model="isMovable"/>
@@ -111,6 +120,26 @@ export default {
         /* ------------------------------------------------------------ */
     },
     methods:{
+        // Position selected element based on the button press
+        positionElement(position){
+            const positionData = this.positionData;
+            const pdfTemplate = document.querySelector("div.pdfTemplate")
+
+            const positionElements = {
+                xStart: () => positionData.x = 0,
+                yStart: () => positionData.y = 0,
+
+                xCenter: () => positionData.x = (pdfTemplate.offsetWidth - positionData.width) / 2,
+                yCenter: () => positionData.y = (pdfTemplate.offsetHeight - positionData.height) / 2,
+
+                xEnd: () => positionData.x = this.xCordMax,
+                yEnd: () => positionData.y = this.yCordMax,
+            }
+            positionElements[position]();
+
+            this.updateElementPosition();
+        },
+
         // If element has class 'draggable' then its draggable
         checkIfMovable(){
             if(!this.element.elementRef) return;
@@ -169,10 +198,11 @@ export default {
             this.element.staticContent = this.staticContent;
         },
 
+        // Dynamically create an instance of the ImageUpload component and mount it as a child
+        //  of the selected element
         elementTypeImage(){
-            const element = this.element.elementRef;
             const child = document.createElement("div");
-            element.appendChild(child)
+            this.element.elementRef.appendChild(child)
 
             const imageUploadConstructor = Vue.extend(ImageUpload)
             const imageUploadInstance = new imageUploadConstructor({})
@@ -180,9 +210,10 @@ export default {
             this.element.internalComponent = imageUploadInstance.$mount(child);
         },
 
+        // Destroy the internal component of the selected element and remove it from the DOM 
         destroyComponent(){
-            document.querySelector("div.imageUploadComponent").remove();
-         
+            document.querySelector("div.internalComponent").remove();
+            
             this.element.internalComponent.$destroy();
             this.element.internalComponent = null;
         }
@@ -193,7 +224,9 @@ export default {
             if(!this.element) return;
 
             this.checkIfMovable();
-            // TODO - highlight selected element
+
+            this.staticContent = null;
+            this.elementType = null;
             this.positionData = this.element.positionData;
         },
 
@@ -202,6 +235,7 @@ export default {
         },
 
         elementType(){
+            if(!this.elementType) return; // Triggers when new element selected
             if(this.element.internalComponent) this.destroyComponent();
 
             this.element.type = this.elementType;
@@ -210,11 +244,13 @@ export default {
                 image: () => this.elementTypeImage(),
                 singlelineText: () => {},
                 multilineText: () => {},
+                "": () => {},
             }
             elementTypeHandler[this.elementType]();
         },
 
         staticContent(){
+            if(!this.staticContent) return;
             this.updateStaticContent();
         },
 
@@ -225,7 +261,7 @@ export default {
             },
             deep: true
         }
-    }
+    },
 }
 </script>
 
