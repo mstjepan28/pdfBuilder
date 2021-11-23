@@ -15,9 +15,9 @@
 export default {
     data(){
         return{
-            isDragging:false,
-            wrongFile:false,
-            imageSource:null
+            isDragging: false,
+            wrongFile: false,
+            imageSource: null
         }
     },
     methods:{
@@ -47,6 +47,10 @@ export default {
             this.wrongFile = true
             this.imageSource = null
             this.isDragging = false
+        },
+
+        setImageURL(imageURL){
+            this.imageSource = imageURL
         }
     }
 }

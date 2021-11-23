@@ -15,10 +15,10 @@
 
             <div class="elementPositioning">
                 <button @click="positionElement('xStart')">X Start</button>
-                <button @click="positionElement('xCenter')">X Center</button>
-                <button @click="positionElement('xEnd')">X End</button>
                 <button @click="positionElement('yStart')">Y Start</button>
+                <button @click="positionElement('xCenter')">X Center</button>
                 <button @click="positionElement('yCenter')">Y Center</button>
+                <button @click="positionElement('xEnd')">X End</button>
                 <button @click="positionElement('yEnd')">Y End</button>
             </div>
 
@@ -28,27 +28,37 @@
             </div>
 
             <h4>Static content</h4>
+            
+            <div>
+                <label for="elementType">Select the element type: </label>
+                <select id="elementType" v-model="elementType">
+                    <option :key="type.value" v-for="type in contentType" :value="type.value">{{type.label}}</option>
+                </select>
+            </div>
 
             <div>
                 <label for="isStatic">Is static value</label>
                 <input id="isStatic" type="checkbox" v-model="element.isStatic"/>
             </div>
-            
+
             <div v-if="element.isStatic">
-                <label for="staticContentInput"></label>
-                <input id="staticContentInput" type="text" v-model="staticContent"/>
+                <div v-if="element.type == 'singlelineText'" class="staticInput">
+                    <label for="singleLineTextInput">Input text: </label>
+                    <input id="singleLineTextInput" type="text" v-model="staticContent"/>
+                </div>
+                <div v-if="element.type == 'multilineText'" class="staticInput">
+                    <label for="multilineTextInput">Input text: </label>
+                    <textarea id="multilineTextInput" v-model="staticContent"></textarea>
+                </div>
+                <div v-if="element.type == 'image'" class="staticInput">
+                    <label for="imageURLInput">Image URL: </label>
+                    <textarea id="imageURLInput" v-model="staticContent"></textarea>
+                </div>
             </div>
             <div v-else>
                 <label for="variables">Choose a variable:</label>
                 <select id="variables" v-model="element.variable">
                     <option :key="variable.value" v-for="variable in templateVariables" :value="variable.value">{{variable.label}}</option>
-                </select>
-            </div>
-
-            <div>
-                <label for="elementType">Select the element type: </label>
-                <select id="elementType" v-model="elementType">
-                    <option :key="type.value" v-for="type in contentType" :value="type.value">{{type.label}}</option>
                 </select>
             </div>
 
@@ -192,9 +202,10 @@ export default {
         },
 
         updateStaticContent(){
+            if(this.elementType == "image") return this.element.internalComponent.setImageURL(this.staticContent);
             const element = this.element.elementRef;
 
-            element.innerHTML = this.staticContent
+            element.innerHTML = this.staticContent || "";
             this.element.staticContent = this.staticContent;
         },
 
@@ -250,7 +261,6 @@ export default {
         },
 
         staticContent(){
-            if(!this.staticContent) return;
             this.updateStaticContent();
         },
 
@@ -272,4 +282,16 @@ export default {
     @include flex(column, initial, initial);
 }
 
+
+
+.staticInput{
+    label{
+        display: block;
+    }
+    textarea {
+        width: 100%;
+        min-height: 8rem;
+        resize: none;
+    }
+}
 </style>

@@ -81,7 +81,10 @@ export default {
                 },
 
             })
-            .on('tap', (event) => thisRef.shiftFocus(event.target))
+            .on('tap', (event) => {
+                thisRef.selectElementOnClick(event.target)
+                thisRef.shiftFocus(event.target)
+            })
         },
         
         dragMoveListener (event) {
@@ -222,6 +225,8 @@ export default {
             newSelection.style.transform = "translate(" + coordinates.x + "px, " + coordinates.y + "px)";
 
             newSelection.style.position = "absolute";
+            newSelection.style.overflow = "hidden";
+            newSelection.style.wordBreak = "break-all"
             newSelection.style.backgroundColor = "rgba(173,216,230, 0.25)";
 
             document.getElementById("pdfTemplate").appendChild(newSelection)
@@ -249,7 +254,7 @@ export default {
                 elementRef: selection,
                 positionData: positionData,
 
-                type: "image",
+                type: "",
                 variable: "first_name",
                 isStatic: true,
                 staticContent: "",
@@ -274,12 +279,19 @@ export default {
             this.selectedElement = null;
         },
 
-        elementSelected(element){
-            if(this.selectedElement) this.selectedElement.elementRef.style.border = ""
-            
-            this.selectedElement = element
+        selectElementOnClick(elementDom){
+            if(!elementDom) return;
 
-            this.selectedElement.elementRef.style.border = "2px solid #add8e6"
+            const element = this.selectionList.filter(element => element.elementRef == elementDom)[0]
+            this.elementSelected(element);
+        },
+
+        elementSelected(element){
+            if(this.selectedElement) this.selectedElement.elementRef.style.border = "";
+            
+            this.selectedElement = element;
+
+            this.selectedElement.elementRef.style.border = "2px solid #add8e6";
         },
 
         // elem - html element
@@ -298,6 +310,10 @@ export default {
 
 <style lang="scss" scoped>
 @import "../assets/style.scss";
+
+.selection{
+    background: red !important;
+}
 
 .container{
     width: 100vw;
