@@ -3,6 +3,7 @@
         <div class="elementsCol">
             <button @click="makeSelection()">Make selection</button>
             <ConvertPdfBtn :selectionList="selectionList" />
+
         </div>
 
         <div class="templateCol">
@@ -226,10 +227,11 @@ export default {
 
             newSelection.style.position = "absolute";
             newSelection.style.overflow = "hidden";
-            newSelection.style.wordBreak = "break-all"
             newSelection.style.backgroundColor = "rgba(173,216,230, 0.25)";
 
-            document.getElementById("pdfTemplate").appendChild(newSelection)
+            document.getElementById("pdfTemplate").appendChild(newSelection);
+
+            this.shiftFocus(newSelection)
 
             return newSelection;
         },

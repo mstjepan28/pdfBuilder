@@ -236,8 +236,8 @@ export default {
 
             this.checkIfMovable();
 
-            this.staticContent = null;
-            this.elementType = null;
+            this.staticContent = this.element.staticContent;
+            this.elementType = this.element.type;
             this.positionData = this.element.positionData;
         },
 
@@ -253,8 +253,8 @@ export default {
 
             const elementTypeHandler = {
                 image: () => this.elementTypeImage(),
-                singlelineText: () => {},
-                multilineText: () => {},
+                singlelineText: () => this.element.elementRef.style.wordBreak = "keep-all",
+                multilineText: () => this.element.elementRef.style.wordBreak = "break-all",
                 "": () => {},
             }
             elementTypeHandler[this.elementType]();
