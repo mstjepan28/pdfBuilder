@@ -3,7 +3,7 @@
         <div class="elementsCol">
             <button @click="makeSelection()">Make selection</button>
             <ConvertPdfBtn :selectionList="selectionList" />
-
+            <PdfToImage/>
         </div>
 
         <div class="templateCol">
@@ -21,14 +21,15 @@
 </template>
 
 <script>
-import ElementList from "./elementList.vue"
-import EditElement from "./editElement.vue"
+import ElementList from "./elementList.vue";
+import EditElement from "./editElement.vue";
 import ConvertPdfBtn from "./convertPdfBtn.vue"
+import PdfToImage from "./pdfToImage.vue";
 
 import interact from "interactjs";
 
 export default {
-    components: { ElementList, EditElement, ConvertPdfBtn },
+    components: { ElementList, EditElement, ConvertPdfBtn, PdfToImage },
     data(){
         return{
             snapGrid: { x: 16, y: 16 },
@@ -337,6 +338,9 @@ export default {
         position: relative;
 
         background-color: #FFFFFF;
+        background-position: center;
+        background-repeat: no-repeat; 
+        background-size: cover;
     }
 }
 
