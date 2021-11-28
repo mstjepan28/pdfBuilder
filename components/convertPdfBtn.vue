@@ -1,63 +1,47 @@
 <template>
-    <button @click="generatePDF()"> Convert </button>
+    <button @click="postPDFTemplate()"> Convert </button>
 </template>
 
 <script>
-import jsPDF from "jspdf";
 import axios from "axios";
 
 export default {
     props:{
         selectionList: Array,
+        pdfTemplate: ArrayBuffer,
+        pdfDimensions: Object
     },
     methods:{
-        generatePDF(){
-            const doc = new jsPDF();
-            const pdfDoc = document.getElementById("pdfTemplate");
-            const postPDFTemplate = this.postPDFTemplate;
-
-            try{
-                doc.html(pdfDoc, {
-                    callback: doc => {
-                        const pdfBlob = new Blob([ doc.output() ], { type : 'application/pdf'})
-                        postPDFTemplate(pdfBlob)
-                    },
-                    width: 210, // 210mm 
-                    windowWidth: pdfDoc.offsetWidth // width of the "div.pdfTemplate"
-                });
-            }catch(err){
-                console.log(err)
-            }
-        },
-
-        async postPDFTemplate(pdfTemplate){
-            const route = "http://localhost:8080/postTemplate";
-            const extension = pdfTemplate.type.split('/')[1];  
-
+        async postPDFTemplate(){
             const selectionList = this.filterList();
-            const blobList = new Blob([JSON.stringify(selectionList)]);
-            const blobListExtension = pdfTemplate.type.split('/')[1];
+            const pdfDimensions = this.pdfDimensions || {width: 596, height: 842}
+
+            const blobPdfDimensions = new Blob([ JSON.stringify(pdfDimensions) ], { type: "application/json" });
+            const blobSelectionList = new Blob([ JSON.stringify(selectionList) ], { type: "application/json" });
+            const blobPdfTemplate = new Blob([ this.pdfTemplate ], { type : 'application/pdf'})
 
             let data = new FormData();
-            data.append("selectionList", blobList, "selectionList" + blobListExtension, { type: "application/json" })
-            data.append("pdfTemplate", pdfTemplate, "pdfTemplate." + extension)
-
-            const config = { header : {'Content-Type': `multipart/form-data; boundary=${data._boundary}`,} }
+            data.append("pdfDimensions", blobPdfDimensions, "pdfDimensions")
+            data.append("selectionList", blobSelectionList, "selectionList")
+            data.append("pdfTemplate", blobPdfTemplate, "pdfTemplate.pdf")
 
             try{
-                const responce = await axios.post( route, data, config );
+                const responce = await axios.post( "http://localhost:8080/postTemplate", data, {
+                    header : {
+                        'Content-Type': `multipart/form-data; boundary=${data._boundary}`
+                    }
+                });
                 console.log(responce)
             }catch(error){
                 console.log(error);
             }
-        
         },
         
         // Filter data od list elements so it contains only relevent data
         filterList(){
             return this.selectionList.map(element => {
                 const normalisedPositionData = this.normalisePositionData(element.positionData)
-                console.log(normalisedPositionData)
+
                 return {
                     positionData: normalisedPositionData,
                     variable: element.variable,

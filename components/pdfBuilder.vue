@@ -2,8 +2,8 @@
     <div class="container">
         <div class="elementsCol">
             <button @click="makeSelection()">Make selection</button>
-            <ConvertPdfBtn :selectionList="selectionList" />
-            <PdfToImage/>
+            <ConvertPdfBtn :selectionList="selectionList" :pdfTemplate="pdfTemplate" :pdfDimensions="pdfDimensions"/>
+            <PdfToImage @pdfUploaded="setPdfTemplate"/>
         </div>
 
         <div class="templateCol">
@@ -37,6 +37,9 @@ export default {
             isSelectionFinished: true,
             selectedElement: null,
             selectionList: [],
+
+            pdfTemplate: null,
+            pdfDimensions: null,
         }
     },
     methods:{
@@ -303,6 +306,11 @@ export default {
         updatePositionData(elem, newData){
             const element = this.selectionList[elem.dataset.index];
             Object.keys(newData).forEach(key => element.positionData[key] = newData[key])
+        },
+
+        setPdfTemplate(pdfTemplate, pdfDimensions){
+            this.pdfTemplate = pdfTemplate
+            this.pdfDimensions = pdfDimensions
         }
     },
     mounted(){

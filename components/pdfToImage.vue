@@ -64,19 +64,36 @@ export default {
             data.append("pdfTemplate", pdfBlob, "pdfTemplate.pdf")
 
             const config = { header : {'Content-Type': `multipart/form-data; boundary=${data._boundary}`,} }
+            let imageSize = {}
 
             try{
                 const responce = await axios.post( "http://localhost:8080/convertPdfToImg", data, config );
                 
                 const pdfTemplate = document.querySelector(".pdfTemplate");
                 pdfTemplate.style.backgroundImage = `url(${responce.data.attachment_url})`;
+
+                imageSize = this.getImageSize(responce.data.attachment_url);
                 
             }catch(error){
                 console.log(error);
             }
 
+            this.$emit("pdfUploaded", this.pdfSource, imageSize)
             this.isConverting = false;
         },
+
+        getImageSize(imageSrc){
+            let imageSize = {}
+            let img = new Image()
+
+            img.src = imageSrc
+            img.onload = function(){
+                imageSize.width = this.width;
+                imageSize.height = this.height;
+            }
+
+            return imageSize;
+        }
     }
 }
 </script>
