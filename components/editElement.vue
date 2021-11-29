@@ -74,6 +74,7 @@
 
 <script>
 import ImageUpload from "./imageUpload.vue"
+import axios from "axios";
 import Vue from "vue"
 
 export default {
@@ -130,6 +131,33 @@ export default {
         /* ------------------------------------------------------------ */
     },
     methods:{
+        async getVariables(){
+            try{
+                const responce = await axios.get("http://localhost:8080/variables")
+                this.formatVariables(responce.data.variables);
+            }catch(error){
+                console.log(error)
+            }
+        },
+
+        formatVariables(variableList){
+            this.templateVariables = variableList.reduce((resultArray, variable) => {
+                if(variable == "id") return resultArray;
+
+                let label = variable.split("_")
+                
+                let temp = label[0]
+                label[0] = temp.charAt(0).toUpperCase() + temp.slice(1)
+
+                resultArray.push({
+                    label: label.join(" "),
+                    value: variable
+                })
+
+                return resultArray
+            }, [])
+        },
+
         // Position selected element based on the button press
         positionElement(position){
             const positionData = this.positionData;
@@ -228,6 +256,9 @@ export default {
             this.element.internalComponent.$destroy();
             this.element.internalComponent = null;
         }
+    },
+    async mounted(){
+        await this.getVariables()
     },
     watch:{
         // When selected element gets changed, check its movable 
