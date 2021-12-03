@@ -54,17 +54,19 @@ export default {
             this.isDragging = false
         },
 
+        // Convert the uploaded PDF to a BLOB and send it as a part of a multiform. Set the responce 
+        //  image as the pdfTemplate background and get its width and height
         async convertToImage(){
             if(!this.pdfSource || this.isConverting) return;
             this.isConverting = true;
 
             const pdfBlob = new Blob([ this.pdfSource ], { type : 'application/pdf'})
 
-            let data = new FormData();
+            const data = new FormData();
             data.append("pdfTemplate", pdfBlob, "pdfTemplate.pdf")
 
             const config = { header : {'Content-Type': `multipart/form-data; boundary=${data._boundary}`,} }
-            let imageSize = {}
+            const imageSize = {}
 
             try{
                 const responce = await axios.post( "http://localhost:8080/convertPdfToImg", data, config );
@@ -83,8 +85,8 @@ export default {
         },
 
         getImageSize(imageSrc){
-            let imageSize = {}
-            let img = new Image()
+            const imageSize = {}
+            const img = new Image()
 
             img.src = imageSrc
             img.onload = function(){

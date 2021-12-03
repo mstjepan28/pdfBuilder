@@ -46,9 +46,9 @@
                     <label for="singleLineTextInput">Input text: </label>
                     <input id="singleLineTextInput" type="text" v-model="staticContent"/>
                 </div>
-                <div v-if="element.type == 'multilineText'" class="staticInput">
-                    <label for="multilineTextInput">Input text: </label>
-                    <textarea id="multilineTextInput" v-model="staticContent"></textarea>
+                <div v-if="element.type == 'paragraph'" class="staticInput">
+                    <label for="paragraphInput">Input text: </label>
+                    <textarea id="paragraphInput" v-model="staticContent"></textarea>
                 </div>
                 <div v-if="element.type == 'image'" class="staticInput">
                     <label for="imageURLInput">Image URL: </label>
@@ -100,7 +100,7 @@ export default {
             contentType: [
                 {label: "Image", value: "image"},
                 {label: "Text", value: "singlelineText"},
-                {label: "Paragraf", value: "multilineText"},
+                {label: "Paragraf", value: "paragraph"},
             ],
         }
     },
@@ -255,7 +255,7 @@ export default {
             
             this.element.internalComponent.$destroy();
             this.element.internalComponent = null;
-        }
+        },
     },
     async mounted(){
         await this.getVariables()
@@ -285,7 +285,7 @@ export default {
             const elementTypeHandler = {
                 image: () => this.elementTypeImage(),
                 singlelineText: () => this.element.elementRef.style.wordBreak = "keep-all",
-                multilineText: () => this.element.elementRef.style.wordBreak = "break-all",
+                paragraph: () => this.element.elementRef.style.wordBreak = "break-all",
                 "": () => {},
             }
             elementTypeHandler[this.elementType]();

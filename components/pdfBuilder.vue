@@ -260,9 +260,9 @@ export default {
                 elementRef: selection,
                 positionData: positionData,
 
-                type: "",
+                type: "singlelineText",
                 variable: "first_name",
-                isStatic: true,
+                isStatic: false,
                 staticContent: "",
 
                 internalComponent: null,
