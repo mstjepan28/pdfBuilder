@@ -230,11 +230,11 @@ export default {
         },
 
         updateStaticContent(){
-            if(this.elementType == "image") return this.element.internalComponent.setImageURL(this.staticContent);
-            const element = this.element.elementRef;
-
-            element.innerHTML = this.staticContent || "";
             this.element.staticContent = this.staticContent;
+
+            if(this.elementType == "image") return this.element.internalComponent.setImageURL(this.staticContent);
+
+            this.element.elementRef.innerHTML = this.staticContent || "";
         },
 
         // Dynamically create an instance of the ImageUpload component and mount it as a child
@@ -277,7 +277,7 @@ export default {
         },
 
         elementType(){
-            if(!this.elementType) return; // Triggers when new element selected
+            if(!this.elementType) return; 
             if(this.element.internalComponent) this.destroyComponent();
 
             this.element.type = this.elementType;

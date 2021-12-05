@@ -41,15 +41,12 @@ export default {
         filterList(){
             return this.selectionList.map(element => {
                 const normalisedPositionData = this.normalisePositionData(element.positionData);
-                const staticContent = this.formatParagraph(element);
-
-            console.log(staticContent)
-
+                
                 return {
                     positionData: normalisedPositionData,
                     type: element.type,
                     variable: element.variable,
-                    staticContent: staticContent || false
+                    staticContent: element.staticContent || false
                 }
             })
         },
@@ -68,18 +65,6 @@ export default {
                 height: positionData.height / height, 
             }
             
-        },
-
-        // If the element type is paragraph, break up the given string into substring of assumed row width.
-        //  Join the substring back with the separator <br/> 
-        formatParagraph(element){
-            if(element.type != "paragraph") return element.staticContent;
-
-            const width = element.positionData.width;
-            const avgLetterWidth = 8;
-            const regex = new RegExp(`.{1,${Math.floor(width / avgLetterWidth)}}`, 'g');
-
-            return element.staticContent.match(regex).join("<br />")
         },
     }
 }

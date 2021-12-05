@@ -66,7 +66,7 @@ export default {
             data.append("pdfTemplate", pdfBlob, "pdfTemplate.pdf")
 
             const config = { header : {'Content-Type': `multipart/form-data; boundary=${data._boundary}`,} }
-            const imageSize = {}
+            let imageSize = {}
 
             try{
                 const responce = await axios.post( "http://localhost:8080/convertPdfToImg", data, config );
