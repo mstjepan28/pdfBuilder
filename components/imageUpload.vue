@@ -70,6 +70,8 @@ export default {
     overflow: hidden;
     position: absolute;
 
+    pointer-events: none;
+
     img{
         @include flex(column, center, center);
         
