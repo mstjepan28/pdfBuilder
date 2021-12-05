@@ -41,12 +41,13 @@ export default {
         filterList(){
             return this.selectionList.map(element => {
                 const normalisedPositionData = this.normalisePositionData(element.positionData);
+                const staticContent = this.getStaticContent(element);
                 
                 return {
                     positionData: normalisedPositionData,
                     type: element.type,
                     variable: element.variable,
-                    staticContent: element.staticContent || false
+                    staticContent: staticContent
                 }
             })
         },
@@ -66,6 +67,13 @@ export default {
             }
             
         },
+
+        // Get the base64 image from the internal component. If it doesnt exist return the existing static 
+        //  content or false
+        getStaticContent(element){
+            if(!element.internalComponent) return element.staticContent || false;
+            return element.internalComponent.getImageSource();
+        }   
     }
 }
 </script>

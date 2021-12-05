@@ -51,6 +51,10 @@ export default {
 
         setImageURL(imageURL){
             this.imageSource = imageURL
+        },
+
+        getImageSource(){
+            return this.imageSource;
         }
     }
 }
@@ -70,7 +74,6 @@ export default {
     overflow: hidden;
     position: absolute;
 
-    pointer-events: none;
 
     img{
         @include flex(column, center, center);
