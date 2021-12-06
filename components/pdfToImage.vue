@@ -14,6 +14,9 @@
 import axios from "axios";
 
 export default {
+    props:{
+        apiUrl: String,
+    },
     data(){
         return{
             isDragging: false,
@@ -69,7 +72,7 @@ export default {
             let imageSize = {}
 
             try{
-                const responce = await axios.post( "http://localhost:8080/convertPdfToImg", data, config );
+                const responce = await axios.post(`${this.apiUrl}/convertPdfToImg`, data, config );
                 
                 const pdfTemplate = document.querySelector(".pdfTemplate");
                 pdfTemplate.style.backgroundImage = `url(${responce.data.attachment_url})`;

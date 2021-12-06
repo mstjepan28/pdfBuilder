@@ -79,6 +79,7 @@ import Vue from "vue"
 
 export default {
     props:{
+        apiUrl: String,
         element: Object
     },
     components: { ImageUpload },
@@ -133,7 +134,7 @@ export default {
     methods:{
         async getVariables(){
             try{
-                const responce = await axios.get("http://localhost:8080/variables")
+                const responce = await axios.get(`${this.apiUrl}/variables`)
                 this.formatVariables(responce.data.variables);
             }catch(error){
                 console.log(error)
@@ -270,6 +271,9 @@ export default {
             this.staticContent = this.element.staticContent;
             this.elementType = this.element.type;
             this.positionData = this.element.positionData;
+
+            this.newElementMounted = true;
+            setTimeout(() => this.newElementMounted = false, 100)
         },
 
         isMovable(){
@@ -277,7 +281,7 @@ export default {
         },
 
         elementType(){
-            if(!this.elementType) return; 
+            if(!this.elementType || this.newElementMounted) return; 
             if(this.element.internalComponent) this.destroyComponent();
 
             this.element.type = this.elementType;

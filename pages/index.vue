@@ -1,6 +1,6 @@
 <template>
     <div>
-        <PdfBuilder/>
+        <PdfBuilder :apiUrl="'http://localhost:8080'"/>
     </div>    
 </template>
 

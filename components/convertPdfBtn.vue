@@ -7,6 +7,7 @@ import axios from "axios";
 
 export default {
     props:{
+        apiUrl: String,
         selectionList: Array,
         pdfTemplate: ArrayBuffer,
         pdfDimensions: Object
@@ -26,7 +27,7 @@ export default {
             data.append("pdfTemplate", blobPdfTemplate, "pdfTemplate.pdf")
 
             try{
-                const responce = await axios.post( "http://localhost:8080/postTemplate", data, {
+                const responce = await axios.post(`${this.apiUrl}/postTemplate`, data, {
                     header : {
                         'Content-Type': `multipart/form-data; boundary=${data._boundary}`
                     }

@@ -2,8 +2,8 @@
     <div class="container">
         <div class="elementsCol">
             <button @click="makeSelection()">Make selection</button>
-            <ConvertPdfBtn :selectionList="selectionList" :pdfTemplate="pdfTemplate" :pdfDimensions="pdfDimensions"/>
-            <PdfToImage @pdfUploaded="setPdfTemplate"/>
+            <ConvertPdfBtn :apiUrl="apiUrl" :selectionList="selectionList" :pdfTemplate="pdfTemplate" :pdfDimensions="pdfDimensions"/>
+            <PdfToImage :apiUrl="apiUrl" @pdfUploaded="setPdfTemplate"/>
         </div>
 
         <div class="templateCol">
@@ -14,7 +14,7 @@
             <ElementList :title="'Selection list'" :elementList="selectionList" @elementSelected="elementSelected"/>
             
             <div>
-                <EditElement :element="selectedElement" @deleteElement="updateList"/>
+                <EditElement :apiUrl="apiUrl" :element="selectedElement" @deleteElement="updateList"/>
             </div>
         </div>
     </div>
@@ -29,6 +29,9 @@ import PdfToImage from "./pdfToImage.vue";
 import interact from "interactjs";
 
 export default {
+    props:{
+        apiUrl: String
+    },
     components: { ElementList, EditElement, ConvertPdfBtn, PdfToImage },
     data(){
         return{
@@ -261,12 +264,14 @@ export default {
                 positionData: positionData,
 
                 type: "singlelineText",
-                variable: "first_name",
-                isStatic: false,
+                variable: null,
+                isStatic: true,
                 staticContent: "",
 
                 internalComponent: null,
             })
+
+            this.selectElementOnClick(selection)
         },
 
         // element - js object to remove from dom/list
@@ -287,8 +292,9 @@ export default {
 
         selectElementOnClick(elementDom){
             if(!elementDom) return;
+            if(elementDom.classList.contains("internalComponent")) elementDom = elementDom.parentNode
 
-            const element = this.selectionList.filter(element => element.elementRef == elementDom)[0]
+            const element = this.selectionList.filter(element => element.elementRef == elementDom)[0];
             this.elementSelected(element);
         },
 
