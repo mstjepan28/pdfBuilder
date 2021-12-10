@@ -1,9 +1,23 @@
 <template>
     <div class="container">
+        <ResponceModal 
+            :resultStatus="resultStatus"
+        />
+
         <div class="elementsCol">
             <button @click="makeSelection()">Make selection</button>
-            <ConvertPdfBtn :apiUrl="apiUrl" :selectionList="selectionList" :pdfTemplate="pdfTemplate" :pdfDimensions="pdfDimensions"/>
-            <PdfToImage :apiUrl="apiUrl" @pdfUploaded="setPdfTemplate"/>
+            <button @click="openResponceModal()"> Open modal </button>
+            
+            <ConvertPdfBtn 
+                :apiUrl="apiUrl" 
+                :selectionList="selectionList" 
+                :pdfTemplate="pdfTemplate" 
+                :pdfDimensions="pdfDimensions"
+            />
+            <PdfToImage 
+                :apiUrl="apiUrl" 
+                @pdfUploaded="setPdfTemplate"
+            />
         </div>
 
         <div class="templateCol">
@@ -11,11 +25,17 @@
         </div>
 
         <div class="informationCol">
-            <ElementList :title="'Selection list'" :elementList="selectionList" @elementSelected="elementSelected"/>
+            <ElementList 
+                :title="'Selection list'" 
+                :elementList="selectionList" 
+                @elementSelected="elementSelected"
+            />
             
-            <div>
-                <EditElement :apiUrl="apiUrl" :element="selectedElement" @deleteElement="updateList"/>
-            </div>
+            <EditElement 
+                :apiUrl="apiUrl" 
+                :element="selectedElement" 
+                @deleteElement="updateList"
+            />
         </div>
     </div>
 </template>
@@ -25,6 +45,7 @@ import ElementList from "./elementList.vue";
 import EditElement from "./editElement.vue";
 import ConvertPdfBtn from "./convertPdfBtn.vue"
 import PdfToImage from "./pdfToImage.vue";
+import ResponceModal from "./responceModal.vue";
 
 import interact from "interactjs";
 
@@ -32,7 +53,7 @@ export default {
     props:{
         apiUrl: String
     },
-    components: { ElementList, EditElement, ConvertPdfBtn, PdfToImage },
+    components: { ElementList, EditElement, ConvertPdfBtn, PdfToImage, ResponceModal },
     data(){
         return{
             snapGrid: { x: 16, y: 16 },
@@ -43,6 +64,8 @@ export default {
 
             pdfTemplate: null,
             pdfDimensions: null,
+
+            resultStatus: "pending",
         }
     },
     methods:{
@@ -317,6 +340,11 @@ export default {
         setPdfTemplate(pdfTemplate, pdfDimensions){
             this.pdfTemplate = pdfTemplate
             this.pdfDimensions = pdfDimensions
+        },
+
+        openResponceModal(){
+            const modal = document.querySelector(".modalBackground");
+            modal.style.display = "flex";
         }
     },
     mounted(){
