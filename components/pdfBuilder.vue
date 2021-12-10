@@ -32,7 +32,8 @@
                 @elementSelected="elementSelected"
             />
             
-            <EditElement 
+            <EditElement
+                ref="editElement"
                 :apiUrl="apiUrl" 
                 :element="selectedElement" 
                 @deleteElement="updateList"
@@ -349,10 +350,38 @@ export default {
             setTimeout(() => {
                 this.resultStatus = null
             }, 2000);
-        }
+        },
+
+        moveElement(moveBy){
+            if(!this.selectedElement) return;
+            this.$refs.editElement.updateElementPosition(moveBy)
+        },
+
+        keyboardSupport(event){
+            const moveBy = 10;
+
+            switch(event.key){
+                case "ArrowUp":
+                    this.moveElement({x: 0, y: -moveBy});
+                    break;
+                case "ArrowDown":
+                    this.moveElement({x: 0, y: moveBy});
+                    break;
+                case "ArrowLeft":
+                    this.moveElement({x: -moveBy, y: 0});
+                    break;
+                case "ArrowRight":
+                    this.moveElement({x: moveBy, y: 0});
+                    break;
+            }
+        },
     },
     mounted(){
         this.interaction();
+        document.addEventListener('keydown', this.keyboardSupport)
+    },
+    beforeDestroy(){
+        document.removeEventListener('keydown', this.keyboardSupport);
     }
 }
 </script>

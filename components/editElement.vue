@@ -210,10 +210,16 @@ export default {
             this.positionData.width = this.positionData.width > this.widthDimMax? this.widthDimMax: this.positionData.width;
             this.positionData.height = this.positionData.height > this.heightDimMax? this.heightDimMax: this.positionData.height;
         },
+        
+        moveElementBy(moveBy){
+            this.positionData.x += moveBy.x;
+            this.positionData.y += moveBy.y;
+        },
 
         // Update elements position based on the input values
-        updateElementPosition(){
+        updateElementPosition(moveBy=null){
             if(!this.element || !this.element.positionData) return;
+            if(moveBy) this.moveElementBy(moveBy);
 
             this.validatePositionData();
             const element = this.element.elementRef;
