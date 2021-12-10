@@ -101,7 +101,7 @@ export default {
             contentType: [
                 {label: "Image", value: "image"},
                 {label: "Text", value: "singlelineText"},
-                {label: "Paragraf", value: "paragraph"},
+                {label: "Paragraph", value: "paragraph"},
             ],
         }
     },
@@ -134,8 +134,8 @@ export default {
     methods:{
         async getVariables(){
             try{
-                const responce = await axios.get(`${this.apiUrl}/variables`)
-                this.formatVariables(responce.data.variables);
+                const response = await axios.get(`${this.apiUrl}/variables`)
+                this.formatVariables(response.data.variables);
             }catch(error){
                 console.log(error)
             }
@@ -196,7 +196,7 @@ export default {
             toggle[this.isMovable]();
         },
 
-        // Validate inputed position data. If its not valid set the value to the upper/lower bound.
+        // Validate inputted position data. If its not valid set the value to the upper/lower bound.
         validatePositionData(){
             Object.keys(this.positionData).forEach(key => {
                 let value = parseInt(this.positionData[key])
@@ -311,7 +311,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import "../assets/style.scss";
+@import "./styles/style.scss";
 
 .positionData{
     @include flex(column, initial, initial);

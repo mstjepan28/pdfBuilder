@@ -14,6 +14,8 @@ export default {
     },
     methods:{
         async postPDFTemplate(){
+            this.openResponseModal();
+
             const selectionList = this.filterList();
             const pdfDimensions = this.pdfDimensions || {width: 596, height: 842}
 
@@ -27,25 +29,32 @@ export default {
             data.append("pdfTemplate", blobPdfTemplate, "pdfTemplate.pdf")
 
             try{
-                const responce = await axios.post(`${this.apiUrl}/postTemplate`, data, {
+                const response = await axios.post(`${this.apiUrl}/postTemplate`, data, {
                     header : {
                         'Content-Type': `multipart/form-data; boundary=${data._boundary}`
                     }
                 });
-                console.log(responce)
+                
+                this.$emit("converterResponse", response.status)
             }catch(error){
-                console.log(error);
+                this.$emit("converterResponse", 500)
             }
         },
 
-        // Filter data od list elements so it contains only relevent data
+        openResponseModal(){
+            const modal = document.querySelector(".modalBackground");
+            modal.style.display = "flex";
+        },
+
+        // Filter data od list elements so it contains only relevant data
         filterList(){
             return this.selectionList.map(element => {
-                const normalisedPositionData = this.normalisePositionData(element.positionData);
+                const normalizedPositionData = this.normalizePositionData(element.positionData);
                 const staticContent = this.getStaticContent(element);
                 
                 return {
-                    positionData: normalisedPositionData,
+                    positionData: 
+                    normalizedPositionData,
                     type: element.type,
                     variable: element.variable,
                     staticContent: staticContent
@@ -55,7 +64,7 @@ export default {
 
         // This PDF and the one on the frontend do not match in dimensions so the positionData is offset. 
         //  To fix that the positionData is the percentage of the width/height of the PDF
-        normalisePositionData(positionData){
+        normalizePositionData(positionData){
             const pdfTemplate = document.querySelector("div.pdfTemplate")
             const width = pdfTemplate.offsetWidth;
             const height = pdfTemplate.offsetHeight;
@@ -69,7 +78,7 @@ export default {
             
         },
 
-        // Get the base64 image from the internal component. If it doesnt exist return the existing static 
+        // Get the base64 image from the internal component. If it doesn't exist return the existing static 
         //  content or false
         getStaticContent(element){
             if(!element.internalComponent) return element.staticContent || false;
@@ -78,7 +87,3 @@ export default {
     }
 }
 </script>
-
-<style>
-
-</style>

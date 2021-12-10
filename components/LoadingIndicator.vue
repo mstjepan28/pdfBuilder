@@ -9,19 +9,19 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import "../assets/style.scss";
+@import "./styles/style.scss";
 
 .loading{
-    $spinerSize: 120px;
-    $spinerThickness: 12px;
+    $spinnerSize: 120px;
+    $spinnerThickness: 12px;
 
-    width: $spinerSize;
-    height: $spinerSize;
+    width: $spinnerSize;
+    height: $spinnerSize;
 
     border-radius: 100%;
-    border: $spinerThickness solid rgba(0,0,0,.2);
+    border: $spinnerThickness solid rgba(0,0,0,.2);
 
-    animation: roation 2s infinite linear;
+    animation: spinning 2s infinite linear;
 
     &:before{
         
@@ -34,18 +34,18 @@ export default {
         display:block;
         
         position:absolute;
-        left: -$spinerThickness;
-        top: -$spinerThickness;
+        left: -$spinnerThickness;
+        top: -$spinnerThickness;
         
-        border-top:    $spinerThickness solid rgba(0,0,0,.8);
-        border-left:   $spinerThickness solid transparent;
-        border-bottom: $spinerThickness solid transparent;
-        border-right:  $spinerThickness solid transparent;
+        border-top:    $spinnerThickness solid rgba(0,0,0,.8);
+        border-left:   $spinnerThickness solid transparent;
+        border-bottom: $spinnerThickness solid transparent;
+        border-right:  $spinnerThickness solid transparent;
         border-radius:100%;
     }
 }
 
-@keyframes roation{
+@keyframes spinning{
     from{
         transform: rotate(0deg);
     }

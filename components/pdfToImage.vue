@@ -57,7 +57,7 @@ export default {
             this.isDragging = false
         },
 
-        // Convert the uploaded PDF to a BLOB and send it as a part of a multiform. Set the responce 
+        // Convert the uploaded PDF to a BLOB and send it as a part of a multiform. Set the response 
         //  image as the pdfTemplate background and get its width and height
         async convertToImage(){
             if(!this.pdfSource || this.isConverting) return;
@@ -72,12 +72,12 @@ export default {
             let imageSize = {}
 
             try{
-                const responce = await axios.post(`${this.apiUrl}/convertPdfToImg`, data, config );
+                const response = await axios.post(`${this.apiUrl}/convertPdfToImg`, data, config );
                 
                 const pdfTemplate = document.querySelector(".pdfTemplate");
-                pdfTemplate.style.backgroundImage = `url(${responce.data.attachment_url})`;
+                pdfTemplate.style.backgroundImage = `url(${response.data.attachment_url})`;
 
-                imageSize = this.getImageSize(responce.data.attachment_url);
+                imageSize = this.getImageSize(response.data.attachment_url);
                 
             }catch(error){
                 console.log(error);
@@ -104,7 +104,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import "../assets/style.scss";
+@import "./styles/style.scss";
 
 .dragAndDropPdf{
     @include flex(column, center, center);

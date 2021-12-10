@@ -1,19 +1,20 @@
 <template>
     <div class="container">
-        <ResponceModal 
-            :resultStatus="resultStatus"
+        <ResponseModal 
+            :statusCode="resultStatus"
         />
 
         <div class="elementsCol">
             <button @click="makeSelection()">Make selection</button>
-            <button @click="openResponceModal()"> Open modal </button>
             
             <ConvertPdfBtn 
                 :apiUrl="apiUrl" 
                 :selectionList="selectionList" 
                 :pdfTemplate="pdfTemplate" 
                 :pdfDimensions="pdfDimensions"
+                @converterResponse="converterResponse"
             />
+
             <PdfToImage 
                 :apiUrl="apiUrl" 
                 @pdfUploaded="setPdfTemplate"
@@ -45,7 +46,7 @@ import ElementList from "./elementList.vue";
 import EditElement from "./editElement.vue";
 import ConvertPdfBtn from "./convertPdfBtn.vue"
 import PdfToImage from "./pdfToImage.vue";
-import ResponceModal from "./responceModal.vue";
+import ResponseModal from "./responseModal.vue";
 
 import interact from "interactjs";
 
@@ -53,7 +54,7 @@ export default {
     props:{
         apiUrl: String
     },
-    components: { ElementList, EditElement, ConvertPdfBtn, PdfToImage, ResponceModal },
+    components: { ElementList, EditElement, ConvertPdfBtn, PdfToImage, ResponseModal },
     data(){
         return{
             snapGrid: { x: 16, y: 16 },
@@ -65,7 +66,7 @@ export default {
             pdfTemplate: null,
             pdfDimensions: null,
 
-            resultStatus: "pending",
+            resultStatus: null,
         }
     },
     methods:{
@@ -164,8 +165,8 @@ export default {
         /* ------------------------------------------------------------ */
         
         // targetElement - html element
-        // Sets the zIndex of the taget element to be highest in the parent. 
-        //  zIndexes of other elements get decresed by 1(lower boundery on 0)
+        // Sets the zIndex of the target element to be highest in the parent. 
+        //  zIndexes of other elements get decreased by 1(lower boundary on 0)
         shiftFocus(targetElement){
             const elementList = document.querySelectorAll("div.pdfTemplate>div");
 
@@ -198,17 +199,17 @@ export default {
                 const width = Math.trunc(event.clientX - rect.left) - coordinates.x;
                 const height = Math.trunc(event.clientY - rect.top) - coordinates.y;
 
-                dimesions = {
+                dimensions = {
                     "width": width,
                     "height": height
                 }
-                updateSelection(selection, dimesions)
+                updateSelection(selection, dimensions)
             }
             
             const pdfTemplate = document.getElementById("pdfTemplate");
             
             let coordinates = { x: 0, y: 0 };
-            let dimesions = { width: 0, height: 0 };
+            let dimensions = { width: 0, height: 0 };
             let selection = "";
 
             const controller = new AbortController(); 
@@ -222,7 +223,7 @@ export default {
                     selection.classList.add("draggable", "selection");
 
                     this.togglePointerEvents(pdfTemplate, true);
-                    this.saveNewSelection(selection, {...coordinates, ...dimesions})
+                    this.saveNewSelection(selection, {...coordinates, ...dimensions})
                     this.isSelectionFinished = true;
 
                     controller.abort();
@@ -237,7 +238,7 @@ export default {
             }, { signal: controller.signal })
         },
 
-        // parentElement - html element whos childrens pointer events will be toggled
+        // parentElement - html element who's children's pointer events will be toggled
         // boolValue - true(active pointer events) or false(inactive pointer events)
         // Used to make a selection over/inside other elements inside parent
         togglePointerEvents(parentElement, boolValue){
@@ -269,13 +270,13 @@ export default {
         // selection - html element
         // dimensions - { width: num, height: num }
         // Updates the width and height of the given selection
-        updateSelection(selection, dimesions){
-            selection.style.width = dimesions.width + "px";
-            selection.style.height = dimesions.height + "px";
+        updateSelection(selection, dimensions){
+            selection.style.width = dimensions.width + "px";
+            selection.style.height = dimensions.height + "px";
         },
 
         // selection - html element
-        // positionData - { x: num, y: num, widht: num, height: num}
+        // positionData - { x: num, y: num, width: num, height: num}
         // Set the data-index to the last element of the list and push the selection to the selection list
         saveNewSelection(selection, positionData){
             selection.dataset.index = this.selectionList.length;
@@ -298,7 +299,7 @@ export default {
         },
 
         // element - js object to remove from dom/list
-        // Remove element from dom and from the list. Update the index of each elemet in the list and because the
+        // Remove element from dom and from the list. Update the index of each element in the list and because the
         //  element can only be deleted once its selected, set the selected element to null
         updateList(element){
             document.getElementById("pdfTemplate").removeChild(element.elementRef);
@@ -331,7 +332,7 @@ export default {
 
         // elem - html element
         // newData - either (x ,y) or (width, height)
-        // Get the element from the list based on the data-index atribute. Replace the old (x ,y) or (width, height) with new ones
+        // Get the element from the list based on the data-index attribute. Replace the old (x ,y) or (width, height) with new ones
         updatePositionData(elem, newData){
             const element = this.selectionList[elem.dataset.index];
             Object.keys(newData).forEach(key => element.positionData[key] = newData[key])
@@ -342,9 +343,12 @@ export default {
             this.pdfDimensions = pdfDimensions
         },
 
-        openResponceModal(){
-            const modal = document.querySelector(".modalBackground");
-            modal.style.display = "flex";
+        converterResponse(resultStatus){
+            this.resultStatus = resultStatus;
+
+            setTimeout(() => {
+                this.resultStatus = null
+            }, 2000);
         }
     },
     mounted(){
@@ -354,7 +358,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import "../assets/style.scss";
+@import "./styles/style.scss";
 
 .selection{
     background: red !important;

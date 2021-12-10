@@ -1,5 +1,5 @@
 <template>
-  	<div class="modalBackground" @click="closeResponceModal()">
+  	<div class="modalBackground" @click="closeResponseModal()">
         <div class="modalContainer" @click.stop>
             <div class="statusIndicatorContainer">
                 <div class="statusIndicator">
@@ -19,10 +19,10 @@
                 </div>
             </div>
 
-            <div class="controls">
-                <button @click="rotateStatusIndicator('success')"> Rotate success </button>
-                <button @click="rotateStatusIndicator('pending')"> Rotate pending </button>
-                <button @click="rotateStatusIndicator('fail')"> Rotate fail </button>
+            <div class="feedbackMsg">
+                <h2 v-if="resultStatus == 'pending'"> Your PDFs are being generated...</h2>
+                <h2 v-else-if="resultStatus == 'success'"> PDFs generates successfully </h2>
+                <h2 v-else> Error({{statusCode}}) something went wrong </h2>
             </div>
         </div>
     </div>
@@ -34,7 +34,7 @@ import LoadingIndicator from "./LoadingIndicator.vue"
 
 export default {
     props:{
-        resultStatus: String
+        statusCode: Number,
     },
     components: { LoadingIndicator },
     data(){
@@ -42,8 +42,18 @@ export default {
             svgSize: "150px"
         }
     },
+    computed:{
+        resultStatus(){
+            let resultStatus = 'pending';
+
+            if(this.statusCode == 200) resultStatus = 'success';
+            else if(this.statusCode > 400) resultStatus = 'fail';
+
+            return resultStatus;
+        }
+    },
     methods:{
-        closeResponceModal(){
+        closeResponseModal(){
             const modal = document.querySelector(".modalBackground");
             modal.style.display = "none";
         },
@@ -54,29 +64,31 @@ export default {
                 pending: 135,
                 fail: 45
             }
-            //const roationAngle = rotationLookup[this.resultStatus];
-            const roationAngle = rotationLookup[rotate];
+            const rotationAngle = rotationLookup[rotate];
 
             document.querySelectorAll(".statusIndicator>div").forEach(status => {
-                status.style.transform = `rotate(-${roationAngle}deg)`;
-                //status.style.visibility = status.classList.contains(this.resultStatus)? "visible": "hidden";
+                status.style.transform = `rotate(-${rotationAngle}deg)`;
                 status.style.visibility = status.classList.contains(rotate)? "visible": "hidden";
             });
 
             const statusIndicator = document.querySelector(".statusIndicator");
-            statusIndicator.style.transform = `rotate(${roationAngle}deg)`;
+            statusIndicator.style.transform = `rotate(${rotationAngle}deg)`;
         },
     },
     watch:{
-        resultStatus(){
-            this.handleStatusChange();
+        statusCode(){
+            this.rotateStatusIndicator(this.resultStatus);
+            
+            setTimeout(() => {
+                this.closeResponseModal();
+            }, 2000);
         }
     }
 }
 </script>
 
 <style lang="scss" scoped>
-@import "../assets/style.scss";
+@import "./styles/style.scss";
 
 .modalBackground{
     width: 100vw;
@@ -96,7 +108,7 @@ export default {
 
 .modalContainer{
     width: 750px;
-    min-height: 400px;
+    min-height: 350px;
 
     display: flex;
     flex-direction: column;
@@ -172,8 +184,11 @@ export default {
         transform:scale(1);
     }
 }
-.controls{
-    width: 100%;
+
+.feedbackMsg{
+
+    display: flex;
+    flex-grow: 1;
 }
 
 </style>
