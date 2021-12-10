@@ -216,10 +216,16 @@ export default {
             this.positionData.y += moveBy.y;
         },
 
+        resizeElementBy(resizeBy){
+            this.positionData.width += resizeBy.width;
+            this.positionData.height += resizeBy.height;
+        },
+
         // Update elements position based on the input values
-        updateElementPosition(moveBy=null){
+        updateElementPosition(modification=null, modifyBy=null){
             if(!this.element || !this.element.positionData) return;
-            if(moveBy) this.moveElementBy(moveBy);
+            if(modification == "move") this.moveElementBy(modifyBy);
+            if(modification == "resize") this.resizeElementBy(modifyBy);
 
             this.validatePositionData();
             const element = this.element.elementRef;

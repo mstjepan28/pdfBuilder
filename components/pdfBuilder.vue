@@ -352,26 +352,50 @@ export default {
             }, 2000);
         },
 
-        moveElement(moveBy){
+        moveElement(modifyBy){
             if(!this.selectedElement) return;
-            this.$refs.editElement.updateElementPosition(moveBy)
+            this.$refs.editElement.updateElementPosition("move", modifyBy)
+        },
+
+        resizeElement(modifyBy){
+            if(!this.selectedElement) return;
+            this.$refs.editElement.updateElementPosition("resize", modifyBy)
         },
 
         keyboardSupport(event){
-            const moveBy = 10;
+            const modifyBy = 10;
 
+            if(event.shiftKey){
+                switch(event.key){
+                    case "ArrowUp":
+                        this.resizeElement({width: 0, height: -modifyBy});
+                        break;
+                    case "ArrowDown":
+                        this.resizeElement({width: 0, height: modifyBy});
+                        break;
+                    case "ArrowLeft":
+                        this.resizeElement({width: -modifyBy, height: 0});
+                        break;
+                    case "ArrowRight":
+                        this.resizeElement({width: modifyBy, height: 0});
+                        break;
+                }
+
+                return;
+            }
+            
             switch(event.key){
                 case "ArrowUp":
-                    this.moveElement({x: 0, y: -moveBy});
+                    this.moveElement({x: 0, y: -modifyBy});
                     break;
                 case "ArrowDown":
-                    this.moveElement({x: 0, y: moveBy});
+                    this.moveElement({x: 0, y: modifyBy});
                     break;
                 case "ArrowLeft":
-                    this.moveElement({x: -moveBy, y: 0});
+                    this.moveElement({x: -modifyBy, y: 0});
                     break;
                 case "ArrowRight":
-                    this.moveElement({x: moveBy, y: 0});
+                    this.moveElement({x: modifyBy, y: 0});
                     break;
             }
         },
