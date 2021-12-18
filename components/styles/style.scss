@@ -1,12 +1,15 @@
 *{
     margin: 0;
     padding: 0;
+
+    color: black !important;
+
     box-sizing: border-box;
 }
 
 /* -------------------------------------------------------------------- */
 
-$mainColor: #414B60;
+$mainColor: #fffffe;
 $lightGray: #F7F7F7;
 
 /* -------------------------------------------------------------------- */
@@ -38,9 +41,22 @@ $lightGray: #F7F7F7;
 
 @mixin section($width, $background){
     width: $width;
-    height: 100vh;
+
+    overflow: hidden;
 
     background: $background;
+}
+
+@mixin toggleColButton{
+    width: 100%;
+    border: none;
+
+    transition: 0.4s;
+    background: rgb(224,224,223);
+
+    &:hover, &:focus{
+        background: rgb(224,224,223);
+    }
 }
 
 @mixin flex($flexDirection, $justifyContent, $alignItems){

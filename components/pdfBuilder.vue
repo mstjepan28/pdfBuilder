@@ -5,20 +5,30 @@
         />
 
         <div class="elementsCol">
-            <button @click="makeSelection()">Make selection</button>
-            
-            <ConvertPdfBtn 
-                :apiUrl="apiUrl" 
-                :selectionList="selectionList" 
-                :pdfTemplate="pdfTemplate" 
-                :pdfDimensions="pdfDimensions"
-                @converterResponse="converterResponse"
-            />
+            <div class="colContent">            
+                <button @click="makeSelection()">Make selection</button>
+                
+                <ConvertPdfBtn 
+                    :apiUrl="apiUrl" 
+                    :selectionList="selectionList" 
+                    :pdfTemplate="pdfTemplate" 
+                    :pdfDimensions="pdfDimensions"
+                    @converterResponse="converterResponse"
+                />
 
-            <PdfToImage 
-                :apiUrl="apiUrl" 
-                @pdfUploaded="setPdfTemplate"
-            />
+                <PdfToImage 
+                    :apiUrl="apiUrl" 
+                    @pdfUploaded="setPdfTemplate"
+                />
+
+                <input type="range" min="1" max="200" v-model="zoomValue">
+            </div>
+            
+            <div class="toggleColumn">
+                <button @click="toggleColumn('elementsCol')"> 
+                    <img src="./svg/ChevronArrow.svg" alt="Chevron arrow" style="transform: rotate(90deg)"> 
+                </button>
+            </div>
         </div>
 
         <div class="templateCol">
@@ -26,30 +36,38 @@
         </div>
 
         <div class="informationCol">
-            <ElementList 
-                :title="'Selection list'" 
-                :elementList="selectionList" 
-                @elementSelected="elementSelected"
-            />
-            
-            <EditElement
-                ref="editElement"
-                :apiUrl="apiUrl" 
-                :element="selectedElement" 
-                @deleteElement="updateList"
-            />
+            <div class="toggleColumn">
+                <button @click="toggleColumn('informationCol')"> 
+                    <img src="./svg/ChevronArrow.svg" alt="Chevron arrow" style="transform: rotate(270deg)"> 
+                </button>
+            </div>
+
+            <div class="colContent">            
+                <ElementList 
+                    :title="'Selection list'" 
+                    :elementList="selectionList" 
+                    @elementSelected="elementSelected"
+                />
+                
+                <EditElement
+                    ref="editElement"
+                    :apiUrl="apiUrl" 
+                    :element="selectedElement" 
+                    @deleteElement="updateList"
+                />
+            </div>
         </div>
     </div>
 </template>
 
 <script>
-import ElementList from "./elementList.vue";
-import EditElement from "./editElement.vue";
+import ElementList   from "./elementList.vue";
+import EditElement   from "./editElement.vue";
 import ConvertPdfBtn from "./convertPdfBtn.vue"
-import PdfToImage from "./pdfToImage.vue";
+import PdfToImage    from "./pdfToImage.vue";
 import ResponseModal from "./responseModal.vue";
 
-import interact from "interactjs";
+import interact      from "interactjs";
 
 export default {
     props:{
@@ -58,8 +76,6 @@ export default {
     components: { ElementList, EditElement, ConvertPdfBtn, PdfToImage, ResponseModal },
     data(){
         return{
-            snapGrid: { x: 16, y: 16 },
-            
             isSelectionFinished: true,
             selectedElement: null,
             selectionList: [],
@@ -68,6 +84,8 @@ export default {
             pdfDimensions: null,
 
             resultStatus: null,
+
+            zoomValue: 100, 
         }
     },
     methods:{
@@ -78,28 +96,28 @@ export default {
 
             interact('.draggable')
             .resizable({
-                inertia: true,
+                inertia: false,
                 
                 // resize from all edges and corners
                 edges: { left: true, right: true, bottom: true, top: true },
 
-                listeners: {
-                    move: event => thisRef.resizeHandler(event)
-                },
                 modifiers: [
                     // Element cannot grow outside of the parent
                     interact.modifiers.restrictEdges({ outer: 'parent' }),
                 ],
-
+                
+                listeners: {
+                    move: (event) => thisRef.resizeHandler(event)
+                },
             })
             .draggable({
-                inertia: true,
+                inertia: false,
                 
                 modifiers: [
                     interact.modifiers.snap({
                         targets: [
                             // Snap elements in place when dragged
-                            interact.snappers.grid(thisRef.snapGrid)
+                            interact.snappers.grid({ x: 10, y: 10 })
                         ],
                         range: Infinity,
                         relativePoints: [ { x: 0, y: 0 } ]
@@ -110,11 +128,12 @@ export default {
                 ],
 
                 listeners: {
-                    move: event => thisRef.dragMoveListener(event),
+                    move: (event) => thisRef.dragMoveListener(event),
                 },
 
             })
             .on('tap', (event) => {
+                console.log(event)
                 thisRef.selectElementOnClick(event.target)
                 thisRef.shiftFocus(event.target)
             })
@@ -349,7 +368,7 @@ export default {
 
             setTimeout(() => {
                 this.resultStatus = null
-            }, 2000);
+            }, 3000);
         },
 
         moveElement(modifyBy){
@@ -399,6 +418,15 @@ export default {
                     break;
             }
         },
+
+        toggleColumn(columnSelector){
+            const column = document.querySelector(`div.${columnSelector}`)
+            column.style.transform = column.style.transform? "": "translateX(0)";
+
+            const chevronArrow = document.querySelector(`div.${columnSelector} img`);
+            const curRotation = chevronArrow.style.transform.match(/\d*/g).join("");
+            chevronArrow.style.transform = `rotate(${(parseInt(curRotation) + 180) % 360}deg)`;
+        },
     },
     mounted(){
         this.interaction();
@@ -406,27 +434,32 @@ export default {
     },
     beforeDestroy(){
         document.removeEventListener('keydown', this.keyboardSupport);
-    }
+    },
+    watch:{
+        zoomValue(){
+            const pdfTemplate = document.getElementById("pdfTemplate");
+            pdfTemplate.style.zoom = `${this.zoomValue}%`;
+        }
+    },
 }
 </script>
 
 <style lang="scss" scoped>
 @import "./styles/style.scss";
 
-.selection{
-    background: red !important;
-}
-
 .container{
-    width: 100vw;
-    height: 100vh;
+    @include flex(row, center, stretch);
+    width: 100%;
 
-    @include flex(row, center, center);
+    overflow: hidden;
+    background-color: $mainColor;
 }
 
 .templateCol{
-    @include section(60vw, $lightGray);
+    @include section(95%, $mainColor);
     @include flex(column, center, center);
+
+    overflow: hidden;
     
     & > .pdfTemplate{
         @include boxShadow();
@@ -443,23 +476,50 @@ export default {
     }
 }
 
-.informationCol{
-    @include section(20vw, $mainColor);
+.informationCol, .elementsCol{
+    $contentColWidth: 90%;
+    $transition: 0.4s ease-out;
 
-    padding: 1rem;
+    @include section(25%, $mainColor);
+    @include flex(row, initial, initial);
+    @include boxShadow();
 
-    color: white;
-}
+    transition: $transition;
+    transform: translateX($contentColWidth);
 
-.elementsCol{
-    @include section(20vw, $mainColor);
-    @include flex(column, initial, initial);
+    &>.toggleColumn{
+        width: calc(100% - #{$contentColWidth});
+        
+        &>button{
+            @include toggleColButton;
+        }
+    }
+    &>.colContent{
+        width: $contentColWidth;
+    }
 
-    padding: 1rem;
+    & img{
+        padding: 0.25rem;
+        transition: $transition;
+    }
 
-    button{
-        @include button(#1EA823, #27DB2C);
+    &.elementsCol{
+        transform: translateX(-$contentColWidth);
+        &>.colContent>button{
+            @include button(#1EA823, #27DB2C);
+        }
+    }
+    &.informationCol{
+        transform: translateX($contentColWidth);
     }
 }
 
+
+.toggleColumn{
+    @include flex(row, center, stretch);
+}
+
+@media only screen and (max-width: 1200px){
+
+}
 </style>

@@ -81,7 +81,7 @@ export default {
             
             setTimeout(() => {
                 this.closeResponseModal();
-            }, 2000);
+            }, 3000);
         }
     }
 }
@@ -121,7 +121,7 @@ export default {
 }
 
 .statusIndicatorContainer{
-    $transitionSpeed: 0.75s;
+    $transitionSpeed: 1.75s;
 
     width: 100%;
     max-height: 250px;

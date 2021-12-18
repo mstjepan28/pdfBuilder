@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div class="wrapper">
         <PdfBuilder :apiUrl="'http://localhost:8080'"/>
     </div>    
 </template>
@@ -19,5 +19,11 @@ export default {
     }
     body{
         background-color: #DDDDDD;
+    }
+    .wrapper{
+        width: 100vw;
+        height: 100vh;
+        
+        display: flex;
     }
 </style>
