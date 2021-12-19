@@ -52,8 +52,8 @@ export default {
         },
 
         toggleTransition(toggleSwitch){
-            toggleSwitch.style.transition = "none";
-            setTimeout(() => toggleSwitch.style.transition = "", 40000)
+            toggleSwitch.style.transition = "0s";
+            setTimeout(() => toggleSwitch.style.transition = "", 400)
         }
     },
     // If the initial state is 'enabled' trigger the toggle function
@@ -70,7 +70,7 @@ export default {
 
 $primary: $primaryColor;
 $secondary: $secondaryColor;
-$active: $blueHighlight;
+$active: $greenHighlight;
 $disabled: $highlightColor;
 // *************************** //
 

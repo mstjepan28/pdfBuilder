@@ -29,16 +29,13 @@
 </template>
 
 <script>
-
 import LoadingIndicator from "./LoadingIndicator.vue"
 
 export default {
-    props:{
-        statusCode: Number,
-    },
     components: { LoadingIndicator },
     data(){
         return{
+            statusCode: null,
             svgSize: "150px"
         }
     },
@@ -74,9 +71,9 @@ export default {
             const statusIndicator = document.querySelector(".statusIndicator");
             statusIndicator.style.transform = `rotate(${rotationAngle}deg)`;
         },
-    },
-    watch:{
-        statusCode(){
+
+        setStatus(statusCode){
+            this.statusCode = statusCode;
             this.rotateStatusIndicator(this.resultStatus);
             
             setTimeout(() => {

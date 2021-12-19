@@ -46,12 +46,6 @@
                     @toggled="toggleStaticContent"
                 />
             </div>
-            <!--
-            <div>
-                <label for="isStatic">Is static value</label>
-                <input id="isStatic" type="checkbox" v-model="element.isStatic"/>
-            </div>
-            -->
 
             <h2>Data type: </h2>
             <div class="dataTypeSelection">
@@ -68,27 +62,29 @@
 
             <h2>Static content</h2>
             <div v-if="element.isStatic">
-                <div v-if="element.type == 'singlelineText'" class="staticInput">
-                    <label for="singleLineTextInput">Input text: </label>
+                <div v-if="element.type == 'singlelineText'" class="staticInput textInput">
+                    <h3><label for="singleLineTextInput">Input text: </label></h3>
                     <input id="singleLineTextInput" type="text" v-model="staticContent"/>
                 </div>
-                <div v-if="element.type == 'paragraph'" class="staticInput">
-                    <label for="paragraphInput">Input text: </label>
+                <div v-if="element.type == 'paragraph'" class="staticInput paragraphInput">
+                    <h3><label for="paragraphInput">Input text: </label></h3>
                     <textarea id="paragraphInput" v-model="staticContent"></textarea>
                 </div>
-                <div v-if="element.type == 'image'" class="staticInput">
-                    <label for="imageURLInput">Image URL: </label>
+                <div v-if="element.type == 'image'" class="staticInput imageUrlInput">
+                    <h3><label for="imageURLInput">Image URL: </label></h3>
                     <textarea id="imageURLInput" v-model="staticContent"></textarea>
                 </div>
             </div>
-            <div v-else>
-                <label for="variables">Choose a variable:</label>
+            <div v-else class="variableDropdown">
+                <h3><label for="variables">Choose a variable:</label></h3>
                 <select id="variables" v-model="element.variable">
                     <option :key="variable.value" v-for="variable in templateVariables" :value="variable.value">{{variable.label}}</option>
                 </select>
             </div>
 
-            <DeleteButton @delete="deleteElement"/>
+            <DeleteButton 
+                @delete="deleteElement"
+            />
         </div>
         
         <div v-else>
@@ -191,7 +187,7 @@ export default {
 
             // If the movement state has change, trigger the movement button to change its internal state
             if(this.isMovable != newMovementState) 
-                this.$refs.movementToggle.changeState();
+                this.$refs.movementToggle.changeState(true);
 
             this.isMovable = newMovementState
         },
@@ -226,20 +222,21 @@ export default {
         },
         
         moveElementBy(moveBy){
+            if(!this.isMovable) return;
+            
             this.positionData.x += moveBy.x;
             this.positionData.y += moveBy.y;
         },
 
-        resizeElementBy(resizeBy){
-            this.positionData.width += resizeBy.width;
-            this.positionData.height += resizeBy.height;
+        modifyPositionData(modifyBy){
+            if(!this.isMovable) return;
+            Object.keys(modifyBy).forEach(key => this.positionData[key] += modifyBy[key]);
+            this.validatePositionData();
         },
 
         // Update elements position based on the input values
-        updateElementPosition(modification=null, modifyBy=null){
+        updateElementPosition(){
             if(!this.element || !this.element.positionData) return;
-            if(modification == "move") this.moveElementBy(modifyBy);
-            if(modification == "resize") this.resizeElementBy(modifyBy);
 
             this.validatePositionData();
             const element = this.element.elementRef;
@@ -360,6 +357,7 @@ export default {
     color: $primaryColor;
     background: $highlightColor !important;
 }
+
 .positionData{
     width: 100%;
 
@@ -423,9 +421,10 @@ export default {
         width: 100%;
 
         font-weight: bold;
-        padding: 0.75rem;
+        padding: 0.5rem;
 
         border-radius: 8px;
+        border: 2px solid transparent;
         background: $secondaryColor;
 
         &>input{
@@ -433,19 +432,51 @@ export default {
         }
 
         &:hover, &:focus{
-            color: $primaryColor;
-            background: $highlightColor;
+            border: 2px solid $highlightColor;
         }
     }
 }
 .staticInput{
-    label{
-        display: block;
-    }
-    textarea {
+    & input, & textarea{
         width: 100%;
-        min-height: 8rem;
+        height: 2rem;
+        
+        padding: 0.5rem;
+
+        border-radius: 8px;
+        background: $secondaryColor;
+
+        &:focus{
+            border: 2px solid $highlightColor;
+        }
+    }
+
+    & textarea{
+        height: 10rem;
         resize: none;
+    }
+}
+
+.variableDropdown{
+    select{
+        width: 100%;
+
+        font-size: 16px;
+        font-weight: bold;
+
+        padding: 0.25rem;
+
+        border-radius: 8px;
+        border: none;
+        background: $secondaryColor;
+        
+        &:focus{
+            //border: 1px solid $highlightColor;
+        }
+
+        &>option:hover{
+            background: $secondaryColor;
+        }
     }
 }
 </style>

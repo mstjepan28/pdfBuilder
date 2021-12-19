@@ -1,12 +1,17 @@
 *{
     margin: 0;
     padding: 0;
-    font-family: "Calibri, sans-serif";
     box-sizing: border-box;
 }
 
 label, input[type=checkbox], input[type=radio]{
     cursor: pointer;
+}
+
+input, input:hover, input:focus,
+textarea, textarea:hover, textarea:focus{
+    border: none;
+    outline: none;
 }
 
 button, button:hover, button:focus{
@@ -24,6 +29,8 @@ $secondaryColor: #F0F0EF;
 $highlightColor: #717171;
 
 $blueHighlight: #0076FF;
+$greenHighlight: #73C729; 
+$redHighlight: #F42E25;
 
 /* -------------------------------------------------------------------- */
 
@@ -65,10 +72,10 @@ $blueHighlight: #0076FF;
     border: none;
 
     transition: 0.4s;
-    background: rgb(224,224,223);
+    background: $secondaryColor;
 
     &:hover, &:focus{
-        background: rgb(224,224,223);
+        background: $secondaryColor;
     }
 }
 

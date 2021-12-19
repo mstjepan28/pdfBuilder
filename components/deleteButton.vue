@@ -23,8 +23,10 @@ export default {
     methods: {
         openChoices(){
             const deleteButton = document.querySelector("button.deleteButton");
+            if(deleteButton.style.width) 
+                return this.closeChoices();
+
             deleteButton.style.width = "60%";
-            
             this.closeTimeout = setTimeout(() => deleteButton.style.width = "", 5000);
         },
         closeChoices(){
@@ -50,7 +52,7 @@ export default {
     padding: 0.5rem 0;
     position: relative;
 
-    border: 2px solid red;
+    border: 2px solid $redHighlight;
     border-radius: 8px;
     background: $primaryColor;
 

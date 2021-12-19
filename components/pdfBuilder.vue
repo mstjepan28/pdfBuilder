@@ -1,7 +1,7 @@
 <template>
     <div class="container">
-        <ResponseModal 
-            :statusCode="resultStatus"
+        <ResponseModal
+            ref="responseModal"
         />
 
         <div class="elementsCol">
@@ -84,8 +84,6 @@ export default {
             pdfTemplate: null,
             pdfDimensions: null,
 
-            resultStatus: null,
-
             zoomValue: 100, 
         }
     },
@@ -132,10 +130,6 @@ export default {
                     move: (event) => thisRef.dragMoveListener(event),
                 },
 
-            })
-            .on('tap', (event) => {
-                thisRef.selectElementOnClick(event.target)
-                thisRef.shiftFocus(event.target)
             })
         },
         
@@ -315,6 +309,7 @@ export default {
                 internalComponent: null,
             })
 
+            this.addEventListeners(selection);
             this.selectElementOnClick(selection)
         },
 
@@ -334,6 +329,13 @@ export default {
             this.selectedElement = null;
         },
 
+        addEventListeners(selection){
+            selection.addEventListener("click", (event) => {
+                this.selectElementOnClick(event.target)
+                this.shiftFocus(event.target)
+            })
+        },
+
         selectElementOnClick(elementDom){
             if(!elementDom) return;
             if(elementDom.classList.contains("internalComponent")) elementDom = elementDom.parentNode
@@ -342,7 +344,7 @@ export default {
             this.elementSelected(element);
         },
 
-        elementSelected(element){
+        elementSelected(element){  
             if(this.selectedElement) this.selectedElement.elementRef.style.border = "";
             
             this.selectedElement = element;
@@ -363,23 +365,13 @@ export default {
             this.pdfDimensions = pdfDimensions
         },
 
-        // TODO - replace with ref
         converterResponse(resultStatus){
-            this.resultStatus = resultStatus;
-
-            setTimeout(() => {
-                this.resultStatus = null
-            }, 3000);
+            this.$refs.responseModal.setStatus(resultStatus);
         },
 
-        moveElement(modifyBy){
+        modifyPositionData(modifyBy){
             if(!this.selectedElement) return;
-            this.$refs.editElement.updateElementPosition("move", modifyBy)
-        },
-
-        resizeElement(modifyBy){
-            if(!this.selectedElement) return;
-            this.$refs.editElement.updateElementPosition("resize", modifyBy)
+            this.$refs.editElement.modifyPositionData(modifyBy)
         },
 
         keyboardSupport(event){
@@ -388,16 +380,16 @@ export default {
             if(event.shiftKey){
                 switch(event.key){
                     case "ArrowUp":
-                        this.resizeElement({width: 0, height: -modifyBy});
+                        this.modifyPositionData({x: 0, y: 0, width: 0, height: -modifyBy});
                         break;
                     case "ArrowDown":
-                        this.resizeElement({width: 0, height: modifyBy});
+                        this.modifyPositionData({x: 0, y: 0, width: 0, height: modifyBy});
                         break;
                     case "ArrowLeft":
-                        this.resizeElement({width: -modifyBy, height: 0});
+                        this.modifyPositionData({x: 0, y: 0, width: -modifyBy, height: 0});
                         break;
                     case "ArrowRight":
-                        this.resizeElement({width: modifyBy, height: 0});
+                        this.modifyPositionData({x: 0, y: 0, width: modifyBy, height: 0});
                         break;
                 }
 
@@ -406,16 +398,16 @@ export default {
             
             switch(event.key){
                 case "ArrowUp":
-                    this.moveElement({x: 0, y: -modifyBy});
+                    this.modifyPositionData({x: 0, y: -modifyBy, width: 0, height: 0});
                     break;
                 case "ArrowDown":
-                    this.moveElement({x: 0, y: modifyBy});
+                    this.modifyPositionData({x: 0, y: modifyBy, width: 0, height: 0});
                     break;
                 case "ArrowLeft":
-                    this.moveElement({x: -modifyBy, y: 0});
+                    this.modifyPositionData({x: -modifyBy, y: 0, width: 0, height: 0});
                     break;
                 case "ArrowRight":
-                    this.moveElement({x: modifyBy, y: 0});
+                    this.modifyPositionData({x: modifyBy, y: 0, width: 0, height: 0});
                     break;
             }
         },
@@ -448,6 +440,10 @@ export default {
 <style lang="scss" scoped>
 @import "./styles/style.scss";
 
+.noMoving{
+    cursor: pointer !important;
+}
+
 .container{
     @include flex(row, center, stretch);
     width: 100%;
@@ -457,7 +453,7 @@ export default {
 }
 
 .templateCol{
-    @include section(95%, $primaryColor);
+    @include section(100%, $primaryColor);
     @include flex(column, center, center);
 
     overflow: hidden;
@@ -470,7 +466,7 @@ export default {
 
         position: relative;
 
-        background-color: #FFFFFF;
+        background-color: $primaryColor;
         background-position: center;
         background-repeat: no-repeat; 
         background-size: cover;
