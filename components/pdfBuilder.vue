@@ -46,6 +46,7 @@
                 <ElementList 
                     :title="'Selection list'" 
                     :elementList="selectionList" 
+                    :selectedElement="selectedElement"
                     @elementSelected="elementSelected"
                 />
                 
@@ -133,7 +134,6 @@ export default {
 
             })
             .on('tap', (event) => {
-                console.log(event)
                 thisRef.selectElementOnClick(event.target)
                 thisRef.shiftFocus(event.target)
             })
@@ -452,11 +452,11 @@ export default {
     width: 100%;
 
     overflow: hidden;
-    background-color: $mainColor;
+    background-color: $primaryColor;
 }
 
 .templateCol{
-    @include section(95%, $mainColor);
+    @include section(95%, $primaryColor);
     @include flex(column, center, center);
 
     overflow: hidden;
@@ -477,10 +477,10 @@ export default {
 }
 
 .informationCol, .elementsCol{
-    $contentColWidth: 90%;
+    $contentColWidth: 85%;
     $transition: 0.4s ease-out;
 
-    @include section(25%, $mainColor);
+    @include section(25%, $primaryColor);
     @include flex(row, initial, initial);
     @include boxShadow();
 
@@ -488,6 +488,7 @@ export default {
     transform: translateX($contentColWidth);
 
     &>.toggleColumn{
+        @include flex(row, center, stretch);
         width: calc(100% - #{$contentColWidth});
         
         &>button{
@@ -496,6 +497,7 @@ export default {
     }
     &>.colContent{
         width: $contentColWidth;
+        padding: 0.5rem;
     }
 
     & img{
@@ -512,14 +514,5 @@ export default {
     &.informationCol{
         transform: translateX($contentColWidth);
     }
-}
-
-
-.toggleColumn{
-    @include flex(row, center, stretch);
-}
-
-@media only screen and (max-width: 1200px){
-
 }
 </style>

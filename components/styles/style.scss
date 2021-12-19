@@ -1,16 +1,28 @@
 *{
     margin: 0;
     padding: 0;
-
-    color: black !important;
-
+    font-family: "Calibri, sans-serif";
     box-sizing: border-box;
+}
+
+label, input[type=checkbox], input[type=radio]{
+    cursor: pointer;
+}
+button{
+    cursor: pointer;
+    
+    &:disabled{
+        cursor: initial;
+    }
 }
 
 /* -------------------------------------------------------------------- */
 
-$mainColor: #fffffe;
-$lightGray: #F7F7F7;
+$primaryColor: #fffffe;
+$secondaryColor: #F0F0EF;
+$highlightColor: #717171;
+
+$blueHighlight: #0076FF;
 
 /* -------------------------------------------------------------------- */
 

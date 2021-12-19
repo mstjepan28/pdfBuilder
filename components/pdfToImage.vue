@@ -6,7 +6,7 @@
         @drop.prevent="drop($event)"
     >
         <h4 v-if="wrongFile">Wrong file type</h4>
-        <h4 v-if="!pdfSource && !isDragging && !wrongFile">Drop an PDF</h4>
+        <h4 v-if="!pdfSource && !isDragging && !wrongFile">Drop a PDF</h4>
     </div>
 </template>
 

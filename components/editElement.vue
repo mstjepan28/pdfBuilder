@@ -3,44 +3,70 @@
         <div v-if="element">
             <h2>Edit element</h2>
 
-            <h4>Position data</h4>
+            <h3>Position data</h3>
 
             <div class="positionData">
-                X: <input type="number" v-model="positionData.x">
-                Y: <input type="number" v-model="positionData.y">
+                <div class="elementX">                
+                    <label for="positionDataX">X</label>
+                    <input type="number" id="positionDataX" v-model="positionData.x">
+                </div>
 
-                Width: <input type="number" v-model="positionData.width">
-                Height: <input type="number" v-model="positionData.height">
-            </div>
+                <div class="elementY">
+                    <label for="positionDataY">Y</label>
+                    <input type="number" id="positionDataY" v-model="positionData.y">
+                </div>
 
-            <div class="elementPositioning">
-                <button @click="positionElement('xStart')">X Start</button>
-                <button @click="positionElement('yStart')">Y Start</button>
-                <button @click="positionElement('xCenter')">X Center</button>
-                <button @click="positionElement('yCenter')">Y Center</button>
-                <button @click="positionElement('xEnd')">X End</button>
-                <button @click="positionElement('yEnd')">Y End</button>
+                <div class="ElementW">
+                    <label for="positionDataWidth">W</label>
+                    <input type="number" id="positionDataWidth" v-model="positionData.width">
+                </div>
+
+                <div class="elementH">
+                    <label for="positionDataHeight">H</label>
+                    <input type="number" id="positionDataHeight" v-model="positionData.height">
+                </div>
             </div>
 
             <div class="toggleMovement">
-                <label for="moveToggle">Element can be moved:</label>
-                <input id="moveToggle" type="checkbox" v-model="isMovable"/>
-            </div>
+                <ToggleSwitch
+                    class="toggleWrapper"
+                    ref="movementToggle"
+                    :labels="['Movement enabled', 'Movement disabled']" 
+                    :isDisabled="!isMovable" 
+                    :toggleID="'movementToggle'"
+                    @toggled="toggleMovement"
+                />
 
-            <h4>Static content</h4>
-            
-            <div>
-                <label for="elementType">Select the element type: </label>
-                <select id="elementType" v-model="elementType">
-                    <option :key="type.value" v-for="type in contentType" :value="type.value">{{type.label}}</option>
-                </select>
+                <ToggleSwitch
+                    class="toggleWrapper"
+                    ref="staticToggle"
+                    :labels="['Static content', 'Static content']" 
+                    :isDisabled="!element.isStatic" 
+                    :toggleID="'staticToggle'"
+                    @toggled="toggleStaticContent"
+                />
             </div>
-
+            <!--
             <div>
                 <label for="isStatic">Is static value</label>
                 <input id="isStatic" type="checkbox" v-model="element.isStatic"/>
             </div>
+            -->
 
+            <h2>Data type: </h2>
+            <div class="dataTypeSelection">
+                <label for="elementText" :class="{activeType: elementType == 'singlelineText'}"> 
+                    Text <input type="radio" id="elementText" name="elementType" value="singlelineText" v-model="elementType">
+                </label>
+                <label for="elementParagraph" :class="{activeType: elementType == 'paragraph'}"> 
+                    Paragraph <input type="radio" id="elementParagraph" name="elementType" value="paragraph" v-model="elementType">
+                </label>
+                <label for="elementImage" :class="{activeType: elementType == 'image'}"> 
+                    Image <input type="radio" id="elementImage" name="elementType" value="image" v-model="elementType">
+                </label>
+            </div>
+
+            <h2>Static content</h2>
             <div v-if="element.isStatic">
                 <div v-if="element.type == 'singlelineText'" class="staticInput">
                     <label for="singleLineTextInput">Input text: </label>
@@ -74,6 +100,8 @@
 
 <script>
 import ImageUpload from "./imageUpload.vue"
+import ToggleSwitch from "./ToggleSwitch.vue";
+
 import axios from "axios";
 import Vue from "vue"
 
@@ -82,7 +110,7 @@ export default {
         apiUrl: String,
         element: Object
     },
-    components: { ImageUpload },
+    components: { ImageUpload, ToggleSwitch },
     data(){
         return{
             isMovable: null,
@@ -96,12 +124,6 @@ export default {
                 {label: "First name", value: "first_name"},
                 {label: "Last name", value: "last_name"},
                 {label: "Email", value: "email"}    
-            ],
-
-            contentType: [
-                {label: "Image", value: "image"},
-                {label: "Text", value: "singlelineText"},
-                {label: "Paragraph", value: "paragraph"},
             ],
         }
     },
@@ -159,35 +181,24 @@ export default {
             }, [])
         },
 
-        // Position selected element based on the button press
-        positionElement(position){
-            const positionData = this.positionData;
-            const pdfTemplate = document.querySelector("div.pdfTemplate")
-
-            const positionElements = {
-                xStart: () => positionData.x = 0,
-                yStart: () => positionData.y = 0,
-
-                xCenter: () => positionData.x = (pdfTemplate.offsetWidth - positionData.width) / 2,
-                yCenter: () => positionData.y = (pdfTemplate.offsetHeight - positionData.height) / 2,
-
-                xEnd: () => positionData.x = this.xCordMax,
-                yEnd: () => positionData.y = this.yCordMax,
-            }
-            positionElements[position]();
-
-            this.updateElementPosition();
-        },
+        // ************************************************************ //
 
         // If element has class 'draggable' then its draggable
         checkIfMovable(){
             if(!this.element.elementRef) return;
-            this.isMovable = this.element.elementRef.classList.contains("draggable");
+            const newMovementState = this.element.elementRef.classList.contains("draggable");
+
+            // If the movement state has change, trigger the movement button to change its internal state
+            if(this.isMovable != newMovementState) 
+                this.$refs.movementToggle.changeState();
+
+            this.isMovable = newMovementState
         },
         
         // Add/remove the 'draggable' class from element and in that way toggle its movement
         toggleMovement(){
             const elemRef = this.element.elementRef;
+            this.isMovable = !this.isMovable;
             
             const toggle ={
                 true: () => elemRef.classList.add("draggable"),
@@ -195,6 +206,8 @@ export default {
             }
             toggle[this.isMovable]();
         },
+
+        // ************************************************************ //
 
         // Validate inputted position data. If its not valid set the value to the upper/lower bound.
         validatePositionData(){
@@ -238,8 +251,17 @@ export default {
             element.dataset.y = this.positionData.y;
         },
 
-        deleteElement(){
-            this.$emit("deleteElement", this.element);
+        // ************************************************************ //
+
+        toggleStaticContent(newElement=null){
+            const internalState = this.$refs.staticToggle.toggleState
+
+            if(this.element.isStatic == internalState) 
+                return
+            else if(newElement)
+                this.$refs.staticToggle.changeState(true);
+            else
+                this.element.isStatic = internalState;
         },
 
         updateStaticContent(){
@@ -249,6 +271,8 @@ export default {
 
             this.element.elementRef.innerHTML = this.staticContent || "";
         },
+
+        // ************************************************************ //
 
         // Dynamically create an instance of the ImageUpload component and mount it as a child
         //  of the selected element
@@ -269,6 +293,12 @@ export default {
             this.element.internalComponent.$destroy();
             this.element.internalComponent = null;
         },
+
+        // ************************************************************ //
+
+        deleteElement(){
+            this.$emit("deleteElement", this.element);
+        },
     },
     async mounted(){
         await this.getVariables()
@@ -278,18 +308,18 @@ export default {
         element(){
             if(!this.element) return;
 
-            this.checkIfMovable();
-
             this.staticContent = this.element.staticContent;
             this.elementType = this.element.type;
             this.positionData = this.element.positionData;
 
             this.newElementMounted = true;
-            setTimeout(() => this.newElementMounted = false, 100)
-        },
 
-        isMovable(){
-            this.toggleMovement()
+            setTimeout(() => {
+                this.newElementMounted = false;
+                
+                this.checkIfMovable();
+                this.toggleStaticContent(true);
+            }, 100)
         },
 
         elementType(){
@@ -325,12 +355,88 @@ export default {
 <style lang="scss" scoped>
 @import "./styles/style.scss";
 
+.activeType{
+    color: $primaryColor;
+    background: $highlightColor !important;
+}
 .positionData{
-    @include flex(column, initial, initial);
+    width: 100%;
+
+    display: grid;
+    grid-template: repeat(2, 1fr);
+    gap: 1rem;
+
+    padding: 1rem;
+    
+    border-radius: 8px;
+    background: $secondaryColor;
+    
+    .elementX { 
+        grid-area: 1 / 1 / 2 / 2; 
+    }
+    .elementY { 
+        grid-area: 1 / 2 / 2 / 3; 
+    }
+    .elementW { 
+        grid-area: 2 / 1 / 3 / 2; 
+    }
+    .elementH { 
+        grid-area: 2 / 2 / 3 / 3; 
+    }
+
+    &>div{
+        display: flex;
+        gap: 0.25rem;
+
+        font-weight: bold;
+
+        &>label{
+            width: 1.5rem;
+        }
+
+        &>input{
+            width: 100%;
+
+            font-weight: bold;
+
+            outline: none;
+            border: none;
+            border-bottom: 1px solid black ;
+            background: none;
+        }
+    }
 }
 
+.toggleWrapper{
+    @include flex(row, space-between, center);
+    width: 100%;
+}
 
+.dataTypeSelection{
+    @include flex(row, space-around, center);
+    column-gap: 0.25rem;
 
+    &>label{
+        @include flex(column, center, center);
+
+        width: 100%;
+
+        font-weight: bold;
+        padding: 0.75rem;
+
+        border-radius: 8px;
+        background: $secondaryColor;
+
+        &>input{
+            display: none !important;
+        }
+
+        &:hover, &:focus{
+            color: $primaryColor;
+            background: $highlightColor;
+        }
+    }
+}
 .staticInput{
     label{
         display: block;

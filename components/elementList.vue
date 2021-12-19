@@ -3,7 +3,9 @@
         <h2>{{title}}</h2>
         <ul v-if="elementList" class="elementList">
             <li :key="element.index" :element="element" v-for="element in elementList">
-                <button @click="selectElement(element.index)">{{element.name}}</button>
+                <button   @click="selectElement(element.index)">
+                    {{element.name}}
+                </button>
             </li>
         </ul>
     </div>
@@ -13,12 +15,8 @@
 export default {
     props:{
         elementList: Array,
-        title: String
-    },
-    data(){
-        return{
-            
-        }
+        title: String,
+        selectedElement: Object
     },
     methods:{
         selectElement(index){
@@ -32,16 +30,41 @@ export default {
 <style lang="scss" scoped>
 @import "./styles/style.scss";
 
+.active{
+    border: 1px solid $highlightColor !important;
+}
 .elementList{
-    
+    @include flex(column, center, initial);
+    row-gap: 0.5rem;
     list-style-type: none;
     
     & > li{
-        @include flex(row, space-between, initial);
+        @include flex(row, center, center);
+
+        & button{
+            width: 90%;
+
+            font-weight: bold;
+            word-break: normal;
+            text-align: start;
+
+            padding: 0.5rem;
+
+            cursor: pointer;
+
+            outline: none;
+            border: none;
+            border-radius: 8px;
+
+            background: $secondaryColor;
         
-        margin: 1rem 0;
-        padding: 0 1rem;
+            &:focus{
+                outline: none;
+                text-decoration: underline;
+            }
+        }
     }
+
 }
 
 
