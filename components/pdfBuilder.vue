@@ -363,6 +363,7 @@ export default {
             this.pdfDimensions = pdfDimensions
         },
 
+        // TODO - replace with ref
         converterResponse(resultStatus){
             this.resultStatus = resultStatus;
 
@@ -421,11 +422,11 @@ export default {
 
         toggleColumn(columnSelector){
             const column = document.querySelector(`div.${columnSelector}`)
-            column.style.transform = column.style.transform? "": "translateX(0)";
+            column.style.transform = column.style.transform? "": "translateX(0)"; // "" - hide / "translateX(0)" - show 
 
-            const chevronArrow = document.querySelector(`div.${columnSelector} img`);
-            const curRotation = chevronArrow.style.transform.match(/\d*/g).join("");
-            chevronArrow.style.transform = `rotate(${(parseInt(curRotation) + 180) % 360}deg)`;
+            const chevronArrow = document.querySelector(`div.${columnSelector} img`); 
+            const curRotation = chevronArrow.style.transform.match(/\d*/g).join(""); // Get cur rotation with regex
+            chevronArrow.style.transform = `rotate(${(parseInt(curRotation) + 180) % 360}deg)`; // Add 180 deg to make the arrow point the other way
         },
     },
     mounted(){

@@ -88,7 +88,7 @@
                 </select>
             </div>
 
-            <button @click="deleteElement(element.index)"> Delete </button>
+            <DeleteButton @delete="deleteElement"/>
         </div>
         
         <div v-else>
@@ -99,8 +99,9 @@
 </template>
 
 <script>
-import ImageUpload from "./imageUpload.vue"
+import ImageUpload from "./imageUpload.vue";
 import ToggleSwitch from "./ToggleSwitch.vue";
+import DeleteButton from "./deleteButton.vue";
 
 import axios from "axios";
 import Vue from "vue"
@@ -110,7 +111,7 @@ export default {
         apiUrl: String,
         element: Object
     },
-    components: { ImageUpload, ToggleSwitch },
+    components: { ImageUpload, ToggleSwitch, DeleteButton },
     data(){
         return{
             isMovable: null,

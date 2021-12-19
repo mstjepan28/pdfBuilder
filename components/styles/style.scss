@@ -8,12 +8,13 @@
 label, input[type=checkbox], input[type=radio]{
     cursor: pointer;
 }
-button{
+
+button, button:hover, button:focus{
+    border: none;
+    outline: none;
+    background: none;
+
     cursor: pointer;
-    
-    &:disabled{
-        cursor: initial;
-    }
 }
 
 /* -------------------------------------------------------------------- */

@@ -79,13 +79,6 @@ $SliderSize: 15px;
 $SwitchWidth: 36px;
 $SwitchHeight: 20px;
 
-button, button:hover, button:focus{
-    border: none;
-    outline: none;
-    background: none;
-
-    cursor: pointer;
-}
 
 .activeBackground{
     background: $active !important;
