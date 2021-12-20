@@ -61,7 +61,7 @@ $redHighlight: #F42E25;
 
 @mixin section($width, $background){
     width: $width;
-
+    
     overflow: hidden;
 
     background: $background;

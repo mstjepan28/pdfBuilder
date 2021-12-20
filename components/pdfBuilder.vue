@@ -23,7 +23,7 @@
 
                 <input type="range" min="1" max="200" v-model="zoomValue">
             </div>
-            
+
             <div class="toggleColumn">
                 <button @click="toggleColumn('elementsCol')"> 
                     <img src="./svg/ChevronArrow.svg" alt="Chevron arrow" style="transform: rotate(90deg)"> 
@@ -414,7 +414,11 @@ export default {
 
         toggleColumn(columnSelector){
             const column = document.querySelector(`div.${columnSelector}`)
-            column.style.transform = column.style.transform? "": "translateX(0)"; // "" - hide / "translateX(0)" - show 
+            if(column.classList.contains("shrinkElement")) 
+                column.classList.remove("shrinkElement")
+            else 
+                column.classList.add("shrinkElement")
+
 
             const chevronArrow = document.querySelector(`div.${columnSelector} img`); 
             const curRotation = chevronArrow.style.transform.match(/\d*/g).join(""); // Get cur rotation with regex
@@ -440,10 +444,6 @@ export default {
 <style lang="scss" scoped>
 @import "./styles/style.scss";
 
-.noMoving{
-    cursor: pointer !important;
-}
-
 .container{
     @include flex(row, center, stretch);
     width: 100%;
@@ -453,8 +453,10 @@ export default {
 }
 
 .templateCol{
-    @include section(100%, $primaryColor);
-    @include flex(column, center, center);
+    @include section(auto, $primaryColor);
+    @include flex(row, center, center);
+
+    flex-grow: 1;
 
     overflow: hidden;
     
@@ -474,42 +476,55 @@ export default {
 }
 
 .informationCol, .elementsCol{
-    $contentColWidth: 85%;
     $transition: 0.4s ease-out;
 
-    @include section(25%, $primaryColor);
+    @include section(30%, $primaryColor);
     @include flex(row, initial, initial);
     @include boxShadow();
+    
+    min-width: 18.5rem;
+    max-width: 22.5rem;
 
     transition: $transition;
-    transform: translateX($contentColWidth);
 
     &>.toggleColumn{
         @include flex(row, center, stretch);
-        width: calc(100% - #{$contentColWidth});
+        width: 2.5rem;
+        min-width: 2.5rem;
         
         &>button{
             @include toggleColButton;
         }
     }
     &>.colContent{
-        width: $contentColWidth;
+        width: 20rem;
+        min-width: 16rem;
         padding: 0.5rem;
+
+        overflow: hidden;
     }
 
     & img{
         padding: 0.25rem;
         transition: $transition;
     }
+}
 
-    &.elementsCol{
-        transform: translateX(-$contentColWidth);
-        &>.colContent>button{
-            @include button(#1EA823, #27DB2C);
-        }
+.shrinkElement{
+    width: 2.5rem;
+    min-width: 0rem;
+
+    &>.colContent{
+        width: 0;
+        min-width: 0;
+        padding: 0;
     }
-    &.informationCol{
-        transform: translateX($contentColWidth);
+
+    &.informationCol>.colContent{
+        transition: 4s;
+    }
+    &.elementsCol>.colContent{
+        transition: 0.4s;
     }
 }
 </style>

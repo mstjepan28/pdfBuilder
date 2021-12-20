@@ -2,7 +2,6 @@
     <div>
         <div v-if="element">
             <h2>Edit element</h2>
-
             <h3>Position data</h3>
 
             <div class="positionData">
@@ -358,6 +357,15 @@ export default {
     background: $highlightColor !important;
 }
 
+
+h2{
+    margin-top: 1rem;
+}
+h3{
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
 .positionData{
     width: 100%;
 
@@ -409,6 +417,8 @@ export default {
 .toggleWrapper{
     @include flex(row, space-between, center);
     width: 100%;
+
+    gap: 1rem;
 }
 
 .dataTypeSelection{
@@ -470,10 +480,6 @@ export default {
         border: none;
         background: $secondaryColor;
         
-        &:focus{
-            //border: 1px solid $highlightColor;
-        }
-
         &>option:hover{
             background: $secondaryColor;
         }
