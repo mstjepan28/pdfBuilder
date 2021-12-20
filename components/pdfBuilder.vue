@@ -21,7 +21,9 @@
                     @pdfUploaded="setPdfTemplate"
                 />
 
-                <input type="range" min="1" max="200" v-model="zoomValue">
+                <label for="zoomValue">Zoom value: </label>
+                <input id="zoomValue" type="number" v-model="zoomValue" style="border: 1px solid black">
+                
             </div>
 
             <div class="toggleColumn">
@@ -197,38 +199,38 @@ export default {
             if(!this.isSelectionFinished) return;
             this.isSelectionFinished = false;
 
-            const updateSelection = this.updateSelection;
-
-            function getCoordinates(event){
-                const rect = event.target.getBoundingClientRect();
-
-                coordinates = {
-                    x: Math.trunc(event.clientX - rect.left),
-                    y: Math.trunc(event.clientY - rect.top)
-                }
-            }
-            function getDimensions(event){
-                const rect = event.target.getBoundingClientRect();
-
-                const width = Math.trunc(event.clientX - rect.left) - coordinates.x;
-                const height = Math.trunc(event.clientY - rect.top) - coordinates.y;
-
-                dimensions = {
-                    "width": width,
-                    "height": height
-                }
-                updateSelection(selection, dimensions)
-            }
-            
             const pdfTemplate = document.getElementById("pdfTemplate");
             
             let coordinates = { x: 0, y: 0 };
             let dimensions = { width: 0, height: 0 };
+            
             let selection = "";
-
-            const controller = new AbortController(); 
             let selectionStarted = false;
 
+            const controller = new AbortController(); 
+            const updateSelection = this.updateSelection;
+            const zoomValue = this.zoomValue;
+
+            function accountForZoom(value){
+                return Math.trunc(value / (zoomValue / 100))
+            }
+
+            function getCoordinates(event){
+                coordinates = {
+                    x: accountForZoom(event.offsetX),
+                    y: accountForZoom(event.offsetY),
+                }
+            }
+
+            function getDimensions(event){
+                dimensions = {
+                    width: accountForZoom(event.offsetX) - coordinates.x,
+                    height: accountForZoom(event.offsetY) - coordinates.y
+                }
+
+                updateSelection(selection, dimensions)
+            }
+            
             this.togglePointerEvents(pdfTemplate, false);
 
             pdfTemplate.addEventListener("click", (event) => {
@@ -238,17 +240,18 @@ export default {
 
                     this.togglePointerEvents(pdfTemplate, true);
                     this.saveNewSelection(selection, {...coordinates, ...dimensions})
+
                     this.isSelectionFinished = true;
-
-                    controller.abort();
-                    return 
+                    controller.abort(); 
                 }
-                selectionStarted = true;
-                
-                getCoordinates(event);
-                selection = this.createSelection(coordinates);
-
-                pdfTemplate.addEventListener('mousemove',  getDimensions);
+                else{
+                    selectionStarted = true;
+                    
+                    getCoordinates(event);
+                    selection = this.createSelection(coordinates);
+    
+                    pdfTemplate.addEventListener('mousemove',  getDimensions);
+                }
             }, { signal: controller.signal })
         },
 
@@ -427,7 +430,7 @@ export default {
     },
     mounted(){
         this.interaction();
-        document.addEventListener('keydown', this.keyboardSupport)
+        document.addEventListener('keydown', this.keyboardSupport);
     },
     beforeDestroy(){
         document.removeEventListener('keydown', this.keyboardSupport);
@@ -458,13 +461,14 @@ export default {
 
     flex-grow: 1;
 
-    overflow: hidden;
+    overflow: scroll;
     
     & > .pdfTemplate{
         @include boxShadow();
 
-        width: 210mm;
-        min-height: 297mm;
+        min-width: calc(210mm * 1);
+        aspect-ratio: 1/1.414;
+        //min-height: 297mm;
 
         position: relative;
 
@@ -526,5 +530,11 @@ export default {
     &.elementsCol>.colContent{
         transition: 0.4s;
     }
+}
+
+@media only screen and (max-width: 600px) {
+  body {
+    background-color: lightblue;
+  }
 }
 </style>
