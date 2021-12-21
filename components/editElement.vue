@@ -82,6 +82,7 @@
             </div>
 
             <DeleteButton 
+                class="deleteButton"
                 @delete="deleteElement"
             />
         </div>
@@ -418,12 +419,15 @@ h3{
     @include flex(row, space-between, center);
     width: 100%;
 
-    gap: 1rem;
+    &:first-child{
+        margin: 0.5rem 0;
+    }
 }
 
 .dataTypeSelection{
     @include flex(row, space-around, center);
     column-gap: 0.25rem;
+    margin-top: 0.5rem;
 
     &>label{
         @include flex(column, center, center);
@@ -484,5 +488,9 @@ h3{
             background: $secondaryColor;
         }
     }
+}
+
+.deleteButton{
+    margin-top: 2.5rem;
 }
 </style>

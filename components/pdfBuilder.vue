@@ -22,8 +22,9 @@
                 />
 
                 <label for="zoomValue">Zoom value: </label>
-                <input id="zoomValue" type="number" v-model="zoomValue" style="border: 1px solid black">
+                <input id="zoomValue" type="range" min="1" max="200" v-model="zoomValue">
                 
+                <button type="button" @click="openModal"> Open modal </button>
             </div>
 
             <div class="toggleColumn">
@@ -90,6 +91,10 @@ export default {
         }
     },
     methods:{
+        openModal(){
+            const modal = document.querySelector(".modalBackground");
+            modal.style.display = "flex";
+        },
         /* ------------------------------------------------------------ */
 
         interaction(){
@@ -143,9 +148,8 @@ export default {
             const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy
 
             // update position data of object
-            this.updatePositionData(target, { x, y })
-
-            target.style.transform = 'translate(' + x + 'px, ' + y + 'px)'
+            this.updatePositionData(target, {x, y})
+            target.style.transform = `translate(${y}px, ${y}px)`
 
             // update the position attributes
             target.setAttribute('data-x', x)
@@ -180,21 +184,6 @@ export default {
 
         /* ------------------------------------------------------------ */
         
-        // targetElement - html element
-        // Sets the zIndex of the target element to be highest in the parent. 
-        //  zIndexes of other elements get decreased by 1(lower boundary on 0)
-        shiftFocus(targetElement){
-            const elementList = document.querySelectorAll("div.pdfTemplate>div");
-
-            Array.from(elementList).forEach(element => {
-                let zIndex = element.style.zIndex || 0;
-                element.style.zIndex = (zIndex - 1) < 0? 0: (zIndex - 1);
-            })
-
-            const topZIndex = elementList.length;
-            targetElement.style.zIndex = topZIndex;
-        },
-
         makeSelection(){
             if(!this.isSelectionFinished) return;
             this.isSelectionFinished = false;
@@ -312,7 +301,6 @@ export default {
                 internalComponent: null,
             })
 
-            this.addEventListeners(selection);
             this.selectElementOnClick(selection)
         },
 
@@ -332,27 +320,52 @@ export default {
             this.selectedElement = null;
         },
 
-        addEventListeners(selection){
-            selection.addEventListener("click", (event) => {
-                this.selectElementOnClick(event.target)
-                this.shiftFocus(event.target)
-            })
-        },
+        // event - click on event
+        // click on event handler, if clicked on a selection, open selection in editor, else empty 
+        //  selection from editor
+        selectElementOnClick(event){
+            if(!this.isSelectionFinished) return;
+            const isSelection = event.target.classList.contains("selection")
+            
+            if(!isSelection){
+                if(this.selectedElement) this.selectedElement.elementRef.style.border = "";
+                this.selectedElement = null;
 
-        selectElementOnClick(elementDom){
-            if(!elementDom) return;
-            if(elementDom.classList.contains("internalComponent")) elementDom = elementDom.parentNode
+                return;
+            };
+            if(event.target.classList.contains("internalComponent")) 
+                elementDom = elementDom.parentNode
 
-            const element = this.selectionList.filter(element => element.elementRef == elementDom)[0];
+            // find clicked selection in list
+            const element = this.selectionList.filter(element => element.elementRef == event.target)[0];
             this.elementSelected(element);
         },
 
+        // element - html element
+        // switch out old selected element with new one
         elementSelected(element){  
-            if(this.selectedElement) this.selectedElement.elementRef.style.border = "";
+            if(this.selectedElement) 
+                this.selectedElement.elementRef.style.border = "";
             
             this.selectedElement = element;
-
             this.selectedElement.elementRef.style.border = "2px solid #add8e6";
+        
+            this.shiftFocus(element.elementRef)
+        },
+
+        // targetElement - html element
+        // Sets the zIndex of the target element to be highest in the parent. 
+        //  zIndexes of other elements get decreased by 1(lower boundary on 0)
+        shiftFocus(element){
+            const elementList = document.querySelectorAll("div.pdfTemplate>div");
+
+            Array.from(elementList).forEach(elem => {
+                const zIndex = elem.style.zIndex || 0;
+                elem.style.zIndex = (zIndex - 1) < 0? 0: (zIndex - 1);
+            })
+
+            const topZIndex = elementList.length;
+            element.style.zIndex = topZIndex;
         },
 
         // elem - html element
@@ -430,10 +443,13 @@ export default {
     },
     mounted(){
         this.interaction();
+
         document.addEventListener('keydown', this.keyboardSupport);
+        document.addEventListener("click", this.selectElementOnClick)
     },
     beforeDestroy(){
         document.removeEventListener('keydown', this.keyboardSupport);
+        document.removeEventListener("click", this.selectElementOnClick);
     },
     watch:{
         zoomValue(){
@@ -461,14 +477,13 @@ export default {
 
     flex-grow: 1;
 
-    overflow: scroll;
+    overflow: auto;
     
     & > .pdfTemplate{
         @include boxShadow();
 
         min-width: calc(210mm * 1);
         aspect-ratio: 1/1.414;
-        //min-height: 297mm;
 
         position: relative;
 
@@ -533,8 +548,6 @@ export default {
 }
 
 @media only screen and (max-width: 600px) {
-  body {
-    background-color: lightblue;
-  }
+
 }
 </style>

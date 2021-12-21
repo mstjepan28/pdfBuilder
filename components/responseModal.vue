@@ -35,8 +35,9 @@ export default {
     components: { LoadingIndicator },
     data(){
         return{
+            closeTimeout: null,
             statusCode: null,
-            svgSize: "150px"
+            svgSize: "150px",
         }
     },
     computed:{
@@ -53,6 +54,11 @@ export default {
         closeResponseModal(){
             const modal = document.querySelector(".modalBackground");
             modal.style.display = "none";
+
+            this.statusCode = null;
+            this.rotateStatusIndicator(this.resultStatus);
+
+            if(this.closeTimeout) clearTimeout(this.closeTimeout);
         },
 
         rotateStatusIndicator(rotate){
@@ -76,7 +82,7 @@ export default {
             this.statusCode = statusCode;
             this.rotateStatusIndicator(this.resultStatus);
             
-            setTimeout(() => {
+            this.closeTimeout = setTimeout(() => {
                 this.closeResponseModal();
             }, 3000);
         }
