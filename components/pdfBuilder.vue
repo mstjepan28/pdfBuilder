@@ -188,20 +188,19 @@ export default {
             if(!this.isSelectionFinished) return;
             this.isSelectionFinished = false;
 
-            const pdfTemplate = document.getElementById("pdfTemplate");
-            
             let coordinates = { x: 0, y: 0 };
             let dimensions = { width: 0, height: 0 };
             
             let selection = "";
             let selectionStarted = false;
 
-            const controller = new AbortController(); 
-            const updateSelection = this.updateSelection;
-            const zoomValue = this.zoomValue;
+            const thisRef = this;
+            const pdfTemplate = document.getElementById("pdfTemplate");
+
+            /* ------------------------------------------------------------ */
 
             function accountForZoom(value){
-                return Math.trunc(value / (zoomValue / 100))
+                return Math.trunc(value / (thisRef.zoomValue / 100))
             }
 
             function getCoordinates(event){
@@ -217,31 +216,38 @@ export default {
                     height: accountForZoom(event.offsetY) - coordinates.y
                 }
 
-                updateSelection(selection, dimensions)
+                thisRef.updateSelection(selection, dimensions)
             }
-            
-            this.togglePointerEvents(pdfTemplate, false);
 
-            pdfTemplate.addEventListener("click", (event) => {
+            function makeSelectionHandler(event){
                 if(selectionStarted){
                     pdfTemplate.removeEventListener("mousemove", getDimensions);
                     selection.classList.add("draggable", "selection");
 
-                    this.togglePointerEvents(pdfTemplate, true);
-                    this.saveNewSelection(selection, {...coordinates, ...dimensions})
+                    thisRef.togglePointerEvents(pdfTemplate, true);
+                    thisRef.saveNewSelection(selection, {...coordinates, ...dimensions})
 
-                    this.isSelectionFinished = true;
+                    thisRef.isSelectionFinished = true;
                     controller.abort(); 
                 }
                 else{
                     selectionStarted = true;
                     
                     getCoordinates(event);
-                    selection = this.createSelection(coordinates);
+                    selection = thisRef.createSelection(coordinates);
     
                     pdfTemplate.addEventListener('mousemove',  getDimensions);
                 }
-            }, { signal: controller.signal })
+            }
+            
+            /* ------------------------------------------------------------ */
+
+            this.togglePointerEvents(pdfTemplate, false);
+
+            const controller = new AbortController(); 
+            pdfTemplate.addEventListener("click", makeSelectionHandler, { signal: controller.signal })
+
+            /* ------------------------------------------------------------ */
         },
 
         // parentElement - html element who's children's pointer events will be toggled
@@ -301,7 +307,8 @@ export default {
                 internalComponent: null,
             })
 
-            this.selectElementOnClick(selection)
+            const element = this.getElementFromList(selection);
+            this.elementSelected(element);
         },
 
         // element - js object to remove from dom/list
@@ -320,6 +327,10 @@ export default {
             this.selectedElement = null;
         },
 
+        getElementFromList(element){
+            return this.selectionList.filter(elem => elem.elementRef == element)[0];
+        },
+
         // event - click on event
         // click on event handler, if clicked on a selection, open selection in editor, else empty 
         //  selection from editor
@@ -336,8 +347,8 @@ export default {
             if(event.target.classList.contains("internalComponent")) 
                 elementDom = elementDom.parentNode
 
-            // find clicked selection in list
-            const element = this.selectionList.filter(element => element.elementRef == event.target)[0];
+            
+            const element = this.getElementFromList(event.target);
             this.elementSelected(element);
         },
 
@@ -445,7 +456,7 @@ export default {
         this.interaction();
 
         document.addEventListener('keydown', this.keyboardSupport);
-        document.addEventListener("click", this.selectElementOnClick)
+        document.getElementById("pdfTemplate").addEventListener("click", this.selectElementOnClick)
     },
     beforeDestroy(){
         document.removeEventListener('keydown', this.keyboardSupport);
@@ -529,6 +540,30 @@ export default {
     }
 }
 
+.elementsCol > .colContent{
+    & > *{
+        margin-bottom: 1rem;
+    }
+
+    button{
+        width: 100%;
+
+        font-size: 20px;
+        font-weight: bold;
+
+        padding: 0.75rem 0;
+        
+        border-radius: 8px;
+        border: 1px solid $highlightColor;
+        background: $secondaryColor;
+
+        &:hover, &:focus{
+            color: $primaryColor;
+            background: $highlightColor;
+        }
+    }
+}
+
 .shrinkElement{
     width: 2.5rem;
     min-width: 0rem;
@@ -547,7 +582,5 @@ export default {
     }
 }
 
-@media only screen and (max-width: 600px) {
 
-}
 </style>

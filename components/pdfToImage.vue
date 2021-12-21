@@ -4,26 +4,53 @@
         @dragover.prevent="dragOver" 
         @dragleave.prevent="dragLeave"
         @drop.prevent="drop($event)"
+
+        :class="{
+            success: convertRes == 'success',
+            fail: convertRes == 'fail'
+        }"
     >
-        <h4 v-if="wrongFile">Wrong file type</h4>
-        <h4 v-if="!pdfSource && !isDragging && !wrongFile">Drop a PDF</h4>
+        <div v-if="wrongFile">
+            Wrong file type
+        </div>
+        <div v-else-if="isConverting">
+            <LoadingIndicator 
+                id="pdfToImgLoading" 
+                size="64px" 
+                thickness="8px"
+            />
+        </div>
+        <div v-else-if="!isConverting && convertRes">
+            {{feedbackMsg}}
+        </div>
+        <div v-else-if="!wrongFile">
+            Drop a PDF
+        </div>
     </div>
 </template>
 
 <script>
+import LoadingIndicator from "./LoadingIndicator.vue";
+
 import axios from "axios";
 
 export default {
     props:{
         apiUrl: String,
     },
+    components:{ LoadingIndicator },
     data(){
         return{
+            isConverting: false,
             isDragging: false,
-            wrongFile: false,
-            pdfSource: null,
 
-            isConverting: false
+            pdfSource: null,
+            wrongFile: false,
+
+            convertRes: null,
+            resetTimeout: null,
+
+            feedbackMsg: null,
         }
     },
     methods:{
@@ -34,14 +61,19 @@ export default {
             this.isDragging = false
         },
         drop(event){
+            if(this.resetTimeout){
+                this.resetState()
+                clearTimeout(this.resetTimeout)
+            }
+            
             const file = event.dataTransfer.files[0]
             this.wrongFile = false
 
             if(file.type != "application/pdf") return this.wrongFileFormat();
 
             const reader = new FileReader()
-            reader.onload = (f) => {
-                this.pdfSource = f.target.result
+            reader.onload = (file) => {
+                this.pdfSource = file.target.result
                 this.isDragging = false
                 
                 this.convertToImage();
@@ -50,7 +82,7 @@ export default {
         },
 
         wrongFileFormat(){
-            console.log("wrong format");
+            this.convertRes = "fail"
 
             this.wrongFile = true
             this.pdfSource = null
@@ -79,8 +111,11 @@ export default {
 
                 imageSize = this.getImageSize(response.data.attachment_url);
                 
+                this.convertRes = "success";
+                this.feedbackMsg = "Success!"
             }catch(error){
-                console.log(error);
+                this.feedbackMsg = error.response == undefined? "Error: server isn't responding": "Something went wrong"
+                this.convertRes = "fail";
             }
 
             this.$emit("pdfUploaded", this.pdfSource, imageSize)
@@ -98,6 +133,23 @@ export default {
             }
 
             return imageSize;
+        },
+
+        resetState(){
+            this.wrongFile = false,
+            this.convertRes = null
+        }
+    },
+    watch:{
+        isDragging(){
+            const dragAndDrop = document.querySelector("div.dragAndDropPdf");
+            if(this.isDragging)
+                dragAndDrop.classList.add("draggingOver")
+            else
+                dragAndDrop.classList.remove("draggingOver")
+        },
+        convertRes(){
+            this.resetTimeout = setTimeout(() => this.resetState(), 3000)
         }
     }
 }
@@ -110,14 +162,19 @@ export default {
     @include flex(column, center, center);
 
     width: 100%;
-    min-height: 75px;
+    max-height: 10rem;
 
-    padding: 20px 5px;
+    font-size: 20px;
+    font-weight: bold;
+
+    padding: 4rem 0;
 
     overflow: hidden;
 
-    border-radius: 10px;
-    background: white;
+    transition: 0.2s ease-in-out;
+
+    border-radius: 8px;
+    background: $secondaryColor;
 
     img{
         @include flex(column, center, center);
@@ -125,6 +182,19 @@ export default {
         width: 100%;
         height: 100%;
     }
+}
+
+.draggingOver{
+    color: $primaryColor;
+    background: $highlightColor;
+}
+
+.success{
+    background: rgba($greenHighlight, 0.25)
+}
+
+.fail{
+    background: rgba($redHighlight, 0.25)
 }
 
 </style>

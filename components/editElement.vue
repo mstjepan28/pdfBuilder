@@ -87,8 +87,8 @@
             />
         </div>
         
-        <div v-else>
-            <h4>No element selected</h4>
+        <div v-else class="nothingSelected">
+            <h2>No element selected</h2>
         </div>
 
     </div>
@@ -492,5 +492,20 @@ h3{
 
 .deleteButton{
     margin-top: 2.5rem;
+}
+
+.nothingSelected{
+    @include flex(row, center, center);
+    width: 100%;
+
+    padding: 6rem 0;
+    margin-top: 2rem;
+
+    border-radius: 8px;
+    background: $secondaryColor;
+
+    &>h2{
+        margin: 0;
+    }
 }
 </style>
