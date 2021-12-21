@@ -198,28 +198,17 @@ export default {
             }
 
             function updateSelectionPosition(event){
-                let x = accountForZoom(event.offsetX)
-                let y = accountForZoom(event.offsetY)
-
-                let width  = x - coordinates.x
-                let height = y - coordinates.y
+                let width  = accountForZoom(event.offsetX) - coordinates.x
+                let height = accountForZoom(event.offsetY) - coordinates.y
                 
-                if(width < 0){
-                    selection.style.left = width + "px";
-                    width *= -1
-                }
-                else
-                    selection.style.left = ""
+                selection.style.left = width < 0? `${width}px` : "";
+                selection.style.top = height < 0? `${height}px`: "";
 
-                if(height < 0){
-                    selection.style.top = height + "px";
-                    height *= -1
-                }
-                else
-                    selection.style.top = ""
+                width = Math.abs(width);
+                height = Math.abs(height);
                 
-                selection.style.width = width + "px";
-                selection.style.height = height + "px";
+                selection.style.width  = `${width}px`;
+                selection.style.height = `${height}px`;
 
                 dimensions = { width, height }
             }
@@ -272,10 +261,7 @@ export default {
         createSelection(coordinates){
             const newSelection = document.createElement("div");
             
-            newSelection.dataset.x = coordinates.x;
-            newSelection.dataset.y = coordinates.y;
-            
-            newSelection.style.transform = `translate(${coordinates.x}px, ${coordinates.y}px)`;  
+            this.setCoordinates(newSelection, coordinates);
 
             newSelection.style.position = "absolute";
             newSelection.style.overflow = "hidden";
@@ -296,6 +282,7 @@ export default {
             selection.dataset.index = this.selectionList.length;
 
             selection.style.pointerEvents = "";
+            this.readjustPosition(selection, positionData);
 
             this.selectionList.push({
                 index: this.selectionList.length,
@@ -314,6 +301,35 @@ export default {
             const element = this.getElementFromList(selection);
             this.elementSelected(element);
         },
+
+        // element - html element
+        // coordinates - { x: num, y: num }
+        // Calculate the top and left offset into x and y coordinates and update coordinates
+        readjustPosition(element, coordinates){
+            const top = this.getNumValue(element.style.top);
+            const left = this.getNumValue(element.style.left);
+            const translate = this.getNumValue(element.style.transform, true);
+
+            coordinates.x = translate[0] - left;
+            coordinates.y = translate[1] - top;
+
+            this.setCoordinates(element, coordinates)
+
+            element.style.top = ""
+            element.style.left = ""
+        },
+
+        // element - html element
+        // coordinates - { x: num, y: num }
+        // Set the coordinates of a element
+        setCoordinates(element, coordinates){
+            element.dataset.x = coordinates.x;
+            element.dataset.y = coordinates.y;
+            
+            element.style.transform = `translate(${coordinates.x}px, ${coordinates.y}px)`;  
+        },
+
+        /* ------------------------------------------------------------ */
 
         // element - js object to remove from dom/list
         // Remove element from dom and from the list. Update the index of each element in the list and because the
@@ -452,9 +468,19 @@ export default {
 
 
             const chevronArrow = document.querySelector(`div.${columnSelector} img`); 
-            const curRotation = chevronArrow.style.transform.match(/\d*/g).join(""); // Get cur rotation with regex
-            chevronArrow.style.transform = `rotate(${(parseInt(curRotation) + 180) % 360}deg)`; // Add 180 deg to make the arrow point the other way
+            const curRotation = this.getNumValue(chevronArrow.style.transform) // Get cur rotation
+            chevronArrow.style.transform = `rotate(${(curRotation + 180) % 360}deg)`; // Add 180 deg to make the arrow point the other way
         },
+
+        getNumValue(property, returnArray=false){
+            if(returnArray){
+                return property.match(/\d*/g).reduce((result, value) => {
+                    if(value) result.push(parseInt(value))
+                    return result
+                }, [])
+            }
+            return parseInt(property.match(/\d*/g).join("")) || 0
+        }
     },
     mounted(){
         this.interaction();
