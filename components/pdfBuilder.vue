@@ -23,8 +23,6 @@
 
                 <label for="zoomValue">Zoom value: </label>
                 <input id="zoomValue" type="range" min="1" max="200" v-model="zoomValue">
-                
-                <button type="button" @click="openModal"> Open modal </button>
             </div>
 
             <div class="toggleColumn">
@@ -87,14 +85,10 @@ export default {
             pdfTemplate: null,
             pdfDimensions: null,
 
-            zoomValue: 100, 
+            zoomValue: 100,
         }
     },
     methods:{
-        openModal(){
-            const modal = document.querySelector(".modalBackground");
-            modal.style.display = "flex";
-        },
         /* ------------------------------------------------------------ */
 
         interaction(){
@@ -149,7 +143,7 @@ export default {
 
             // update position data of object
             this.updatePositionData(target, {x, y})
-            target.style.transform = `translate(${y}px, ${y}px)`
+            target.style.transform = `translate(${x}px, ${y}px)`
 
             // update the position attributes
             target.setAttribute('data-x', x)
@@ -157,7 +151,7 @@ export default {
         },
 
         resizeHandler(event) {
-            const target = event.target
+            const target = event.target;
 
             // Get the previous coordinates of the object
             let x = (parseFloat(target.getAttribute('data-x')) || 0)
@@ -176,7 +170,7 @@ export default {
             x += event.deltaRect.left
             y += event.deltaRect.top
 
-            target.style.transform = 'translate(' + x + 'px,' + y + 'px)'
+            target.style.transform = `translate(${x}px, ${y}px)`
 
             target.setAttribute('data-x', x)
             target.setAttribute('data-y', y)
@@ -203,25 +197,36 @@ export default {
                 return Math.trunc(value / (thisRef.zoomValue / 100))
             }
 
-            function getCoordinates(event){
-                coordinates = {
-                    x: accountForZoom(event.offsetX),
-                    y: accountForZoom(event.offsetY),
-                }
-            }
+            function updateSelectionPosition(event){
+                let x = accountForZoom(event.offsetX)
+                let y = accountForZoom(event.offsetY)
 
-            function getDimensions(event){
-                dimensions = {
-                    width: accountForZoom(event.offsetX) - coordinates.x,
-                    height: accountForZoom(event.offsetY) - coordinates.y
+                let width  = x - coordinates.x
+                let height = y - coordinates.y
+                
+                if(width < 0){
+                    selection.style.left = width + "px";
+                    width *= -1
                 }
+                else
+                    selection.style.left = ""
 
-                thisRef.updateSelection(selection, dimensions)
+                if(height < 0){
+                    selection.style.top = height + "px";
+                    height *= -1
+                }
+                else
+                    selection.style.top = ""
+                
+                selection.style.width = width + "px";
+                selection.style.height = height + "px";
+
+                dimensions = { width, height }
             }
 
             function makeSelectionHandler(event){
                 if(selectionStarted){
-                    pdfTemplate.removeEventListener("mousemove", getDimensions);
+                    pdfTemplate.removeEventListener("mousemove", updateSelectionPosition);
                     selection.classList.add("draggable", "selection");
 
                     thisRef.togglePointerEvents(pdfTemplate, true);
@@ -233,10 +238,14 @@ export default {
                 else{
                     selectionStarted = true;
                     
-                    getCoordinates(event);
+                    coordinates = {
+                        x: accountForZoom(event.offsetX),
+                        y: accountForZoom(event.offsetY),
+                    }
+
                     selection = thisRef.createSelection(coordinates);
     
-                    pdfTemplate.addEventListener('mousemove',  getDimensions);
+                    pdfTemplate.addEventListener('mousemove',  updateSelectionPosition);
                 }
             }
             
@@ -266,10 +275,11 @@ export default {
             newSelection.dataset.x = coordinates.x;
             newSelection.dataset.y = coordinates.y;
             
-            newSelection.style.transform = "translate(" + coordinates.x + "px, " + coordinates.y + "px)";
+            newSelection.style.transform = `translate(${coordinates.x}px, ${coordinates.y}px)`;  
 
             newSelection.style.position = "absolute";
             newSelection.style.overflow = "hidden";
+            newSelection.style.pointerEvents = "none"; // needed when shrinking the selection
             newSelection.style.backgroundColor = "rgba(173,216,230, 0.25)";
 
             document.getElementById("pdfTemplate").appendChild(newSelection);
@@ -280,18 +290,12 @@ export default {
         },
 
         // selection - html element
-        // dimensions - { width: num, height: num }
-        // Updates the width and height of the given selection
-        updateSelection(selection, dimensions){
-            selection.style.width = dimensions.width + "px";
-            selection.style.height = dimensions.height + "px";
-        },
-
-        // selection - html element
         // positionData - { x: num, y: num, width: num, height: num}
         // Set the data-index to the last element of the list and push the selection to the selection list
         saveNewSelection(selection, positionData){
             selection.dataset.index = this.selectionList.length;
+
+            selection.style.pointerEvents = "";
 
             this.selectionList.push({
                 index: this.selectionList.length,
@@ -581,6 +585,5 @@ export default {
         transition: 0.4s;
     }
 }
-
 
 </style>
