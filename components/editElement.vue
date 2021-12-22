@@ -2,6 +2,9 @@
     <div>
         <div v-if="element">
             <h2>Edit element</h2>
+
+            <input type="text" class="textInput changeName" v-model="element.name">
+
             <h3>Position data</h3>
 
             <div class="positionData">
@@ -362,6 +365,19 @@ h2{
 h3{
     margin-top: 1rem;
     margin-bottom: 0.5rem;
+}
+
+.changeName{
+    font-size: 20px;
+    font-weight: bold;
+
+    padding: 1rem 0 0.25rem 0.25rem;
+
+    background-color: transparent;
+
+    &:focus{
+        background-color: $secondaryColor;
+    }
 }
 
 .positionData{

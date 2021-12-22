@@ -54,6 +54,7 @@ export default {
 }
 
 .primaryButton{
+    min-height: 2rem;
     padding: 0.25rem 0;
 }
 
