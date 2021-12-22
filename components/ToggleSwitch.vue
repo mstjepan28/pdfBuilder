@@ -1,5 +1,5 @@
 <template>
-    <button type="button"  @click="toggle()">
+    <button class="toggleSwitch" type="button"  @click="toggle()" :class="{activeBorder: toggleState}">
         <h3 v-if="labels" class="switchLabel" :class="{activeColor: toggleState}">{{toggleLabel}}</h3>
 
         <div class="switch" :class="{activeBackground: toggleState}">
@@ -80,11 +80,30 @@ $SwitchWidth: 36px;
 $SwitchHeight: 20px;
 
 
+.activeBorder{
+    &:hover, &:focus{
+        border: 1.5px solid $active !important;
+    }
+}
 .activeBackground{
     background: $active !important;
 }
 .activeColor{
     color: $active !important;
+}
+
+.toggleSwitch{
+    padding: 0.25rem 0.5rem;
+
+    border-radius: 8px;
+    border: 1.5px solid transparent;
+
+    background: $secondary;
+
+    &:hover, &:focus{
+        border: 1.5px solid $disabled;
+        background: $secondary;
+    }
 }
 
 .switch{

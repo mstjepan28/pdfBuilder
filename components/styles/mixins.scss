@@ -1,0 +1,52 @@
+@mixin button(){
+    width: 100%;
+
+    font-size: 16px;
+    font-weight: 700;
+    color: $highlightColor;
+
+    cursor: pointer;
+
+    padding: 0.75rem 0;
+    
+    border-radius: 8px;
+    border: 1.5px solid $highlightColor;
+    background: $secondaryColor;
+
+    &:hover, &:focus{
+        color: $secondaryColor;
+        background: $highlightColor
+    }
+}
+
+@mixin section($width, $background){
+    width: $width;
+    
+    overflow: hidden;
+
+    background: $background;
+}
+
+@mixin toggleColButton{
+    width: 100%;
+    border: none;
+
+    transition: 0.4s;
+    background: $secondaryColor;
+
+    &:hover, &:focus{
+        background: $secondaryColor;
+    }
+}
+
+@mixin flex($flexDirection, $justifyContent, $alignItems){
+    display: flex;
+    flex-direction: $flexDirection;
+
+    justify-content: $justifyContent;
+    align-items: $alignItems;
+}
+
+@mixin boxShadow(){
+    box-shadow: rgb(11, 50, 94) 2px 5px 16px 0px, 5px 5px 15px -30px rgba(0,0,0,0);
+}

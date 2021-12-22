@@ -4,10 +4,20 @@
         @dragover.prevent="dragOver" 
         @dragleave.prevent="dragLeave"
         @drop.prevent="drop($event)"
+
+        :class="{ 
+            fail: convertRes == 'fail'
+        }"
     >
-        <img :src="imageSource" v-if="imageSource" />
-        <h1 v-if="wrongFile">Wrong file type</h1>
-        <h1 v-if="!imageSource && !isDragging && !wrongFile">Drop an image</h1>
+        <div v-if="wrongFile">
+            Wrong file type
+        </div>
+        
+        <img :src="imageSource" alt="uploaded image" v-else-if="imageSource"/>
+        
+        <div v-else-if="!wrongFile">
+            Drag and drop an image
+        </div>
     </div>
 </template>
 
@@ -17,21 +27,26 @@ export default {
         return{
             isDragging: false,
             wrongFile: false,
-            imageSource: null
+            imageSource: null,
+
+            convertRes: null,
+            resetTimeout: null,
         }
     },
     methods:{
         dragOver(){
+            this.resetState();
             this.isDragging = true
         },
         dragLeave(){
             this.isDragging = false
         },
         drop(event){
+            this.resetState();
             const file = event.dataTransfer.files[0]
-            this.wrongFile = false
 
-            if(file.type.indexOf('image/') < 0) return this.wrongFileFormat();
+            if(file.type.indexOf('image/') < 0) 
+                return this.wrongFileFormat();
 
             const reader = new FileReader()
             reader.onload = (f) => {
@@ -42,7 +57,7 @@ export default {
         },
 
         wrongFileFormat(){
-            console.log("wrong format");
+            this.convertRes = "fail"
 
             this.wrongFile = true
             this.imageSource = null
@@ -55,6 +70,25 @@ export default {
 
         getImageSource(){
             return this.imageSource;
+        },
+
+        resetState(){
+            if(this.resetTimeout) clearTimeout(this.resetTimeout)
+
+            this.wrongFile = false,
+            this.convertRes = null
+        }
+    },
+    watch:{
+        isDragging(){
+            const dragAndDrop = document.querySelector("div.imageUploadComponent");
+            if(this.isDragging)
+                dragAndDrop.classList.add("draggingOver")
+            else
+                dragAndDrop.classList.remove("draggingOver")
+        },
+        convertRes(){
+            this.resetTimeout = setTimeout(() => this.resetState(), 3000)
         }
     }
 }
@@ -69,10 +103,12 @@ export default {
     width: 100%;
     height: 100%;
 
-    padding: 5px;
+    padding: 1px;
 
     overflow: hidden;
     position: absolute;
+
+    transition: 0.2s ease-in-out;
 
     & > *{
         pointer-events: none;
@@ -84,6 +120,15 @@ export default {
         width: 100%;
         height: 100%;
     }
+}
+
+.draggingOver{
+    color: $primaryColor;
+    background: $highlightColor;
+}
+
+.fail{
+    background: rgba($redHighlight, 0.25)
 }
 
 </style>

@@ -45,6 +45,11 @@ export default {
 <style lang="scss" scoped>
 @import "./styles/style.scss";
 
+button, button:hover, button:focus{
+    outline: none;
+    border: none;
+}
+
 .deleteContainer{
     @include flex(row, space-between, center);
     width: 100%;
@@ -77,11 +82,15 @@ export default {
 
     .choiceButtons{
         @include flex(row, initial, initial);
+
+        width: 40%;
         margin-left: auto;
 
         &>button{
-            @include flex(row, initial, center);
-            margin-right: 1rem;
+            @include flex(row, center, center);
+            width: 100%;
+
+            background: none;
 
             &>img{
                 $buttonSize: 1.75rem;

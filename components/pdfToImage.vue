@@ -24,7 +24,7 @@
             {{feedbackMsg}}
         </div>
         <div v-else-if="!wrongFile">
-            Drop a PDF
+            Drop a PDF to set as <br> base template
         </div>
     </div>
 </template>
@@ -55,21 +55,19 @@ export default {
     },
     methods:{
         dragOver(){
+            this.resetState();
             this.isDragging = true
         },
         dragLeave(){
             this.isDragging = false
         },
         drop(event){
-            if(this.resetTimeout){
-                this.resetState()
-                clearTimeout(this.resetTimeout)
-            }
+            this.resetState();
             
             const file = event.dataTransfer.files[0]
-            this.wrongFile = false
 
-            if(file.type != "application/pdf") return this.wrongFileFormat();
+            if(file.type != "application/pdf") 
+                return this.wrongFileFormat();
 
             const reader = new FileReader()
             reader.onload = (file) => {
@@ -136,6 +134,8 @@ export default {
         },
 
         resetState(){
+            if(this.resetTimeout) clearTimeout(this.resetTimeout);
+
             this.wrongFile = false,
             this.convertRes = null
         }
@@ -181,6 +181,9 @@ export default {
         
         width: 100%;
         height: 100%;
+    }
+    div{
+        text-align: center;
     }
 }
 

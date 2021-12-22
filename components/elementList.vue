@@ -1,9 +1,9 @@
 <template>
     <div>
-        <h2>{{title}}</h2>
+        <h2 v-if="title">{{title}}</h2>
         <ul v-if="elementList" class="elementList">
             <li :key="element.index" :element="element" v-for="element in elementList">
-                <button   @click="selectElement(element.index)">
+                <button class="primaryButton" @click="selectElement(element.index)">
                     {{element.name}}
                 </button>
             </li>
@@ -14,16 +14,21 @@
 <script>
 export default {
     props:{
-        elementList: Array,
-        title: String,
-        selectedElement: Object
+        title: {
+            type: String,
+            required: false,
+        },
+        elementList: {
+            type: Array,
+            required: true,
+        },
     },
     methods:{
         selectElement(index){
             const element = this.elementList[index];
             this.$emit("elementSelected", element);
         },
-    },
+    }
 }
 </script>
 
@@ -35,36 +40,22 @@ export default {
 }
 .elementList{
     @include flex(column, center, initial);
+    max-height: 15rem;
+
     row-gap: 0.5rem;
     list-style-type: none;
-    
+
+    overflow-y: auto;
+
+    margin-top: 1rem;
+
     & > li{
         @include flex(row, center, center);
-
-        & button{
-            width: 90%;
-
-            font-weight: bold;
-            word-break: normal;
-            text-align: start;
-
-            padding: 0.5rem;
-
-            cursor: pointer;
-
-            outline: none;
-            border: none;
-            border-radius: 8px;
-
-            background: $secondaryColor;
-        
-            &:focus{
-                outline: none;
-                text-decoration: underline;
-            }
-        }
     }
+}
 
+.primaryButton{
+    padding: 0.25rem 0;
 }
 
 

@@ -48,30 +48,30 @@
 
             <h2>Data type: </h2>
             <div class="dataTypeSelection">
-                <label for="elementText" :class="{activeType: elementType == 'singlelineText'}"> 
+                <label for="elementText" class="primaryButton" :class="{activeType: elementType == 'singlelineText'}"> 
                     Text <input type="radio" id="elementText" name="elementType" value="singlelineText" v-model="elementType">
                 </label>
-                <label for="elementParagraph" :class="{activeType: elementType == 'paragraph'}"> 
+                <label for="elementParagraph" class="primaryButton" :class="{activeType: elementType == 'paragraph'}"> 
                     Paragraph <input type="radio" id="elementParagraph" name="elementType" value="paragraph" v-model="elementType">
                 </label>
-                <label for="elementImage" :class="{activeType: elementType == 'image'}"> 
+                <label for="elementImage" class="primaryButton" :class="{activeType: elementType == 'image'}"> 
                     Image <input type="radio" id="elementImage" name="elementType" value="image" v-model="elementType">
                 </label>
             </div>
 
             <h2>Static content</h2>
             <div v-if="element.isStatic">
-                <div v-if="element.type == 'singlelineText'" class="staticInput textInput">
+                <div v-if="element.type == 'singlelineText'" class="staticInput">
                     <h3><label for="singleLineTextInput">Input text: </label></h3>
-                    <input id="singleLineTextInput" type="text" v-model="staticContent"/>
+                    <input id="singleLineTextInput" class="textInput" type="text" v-model="staticContent" placeholder="Write single line text here..."/>
                 </div>
-                <div v-if="element.type == 'paragraph'" class="staticInput paragraphInput">
+                <div v-if="element.type == 'paragraph'" class="staticInput">
                     <h3><label for="paragraphInput">Input text: </label></h3>
-                    <textarea id="paragraphInput" v-model="staticContent"></textarea>
+                    <textarea id="paragraphInput" class="paragraphInput" v-model="staticContent" placeholder="Write your paragraph here..."></textarea>
                 </div>
-                <div v-if="element.type == 'image'" class="staticInput imageUrlInput">
+                <div v-if="element.type == 'image'" class="staticInput">
                     <h3><label for="imageURLInput">Image URL: </label></h3>
-                    <textarea id="imageURLInput" v-model="staticContent"></textarea>
+                    <textarea id="imageURLInput" class="paragraphInput" v-model="staticContent" placeholder="Insert link to an image here..."></textarea>
                 </div>
             </div>
             <div v-else class="variableDropdown">
@@ -354,7 +354,7 @@ export default {
 @import "./styles/style.scss";
 
 .activeType{
-    color: $primaryColor;
+    color: $secondaryColor;
     background: $highlightColor !important;
 }
 
@@ -431,43 +431,9 @@ h3{
 
     &>label{
         @include flex(column, center, center);
-
-        width: 100%;
-
-        font-weight: bold;
-        padding: 0.5rem;
-
-        border-radius: 8px;
-        border: 2px solid transparent;
-        background: $secondaryColor;
-
         &>input{
             display: none !important;
         }
-
-        &:hover, &:focus{
-            border: 2px solid $highlightColor;
-        }
-    }
-}
-.staticInput{
-    & input, & textarea{
-        width: 100%;
-        height: 2rem;
-        
-        padding: 0.5rem;
-
-        border-radius: 8px;
-        background: $secondaryColor;
-
-        &:focus{
-            border: 2px solid $highlightColor;
-        }
-    }
-
-    & textarea{
-        height: 10rem;
-        resize: none;
     }
 }
 

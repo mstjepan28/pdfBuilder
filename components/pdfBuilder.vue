@@ -6,7 +6,7 @@
 
         <div class="elementsCol">
             <div class="colContent">            
-                <button @click="makeSelection()">Make selection</button>
+                <button class="primaryButton" @click="makeSelection()">Make selection</button>
                 
                 <ConvertPdfBtn 
                     :apiUrl="apiUrl" 
@@ -43,11 +43,10 @@
                 </button>
             </div>
 
-            <div class="colContent">            
+            <div class="colContent">
                 <ElementList 
-                    :title="'Selection list'" 
-                    :elementList="selectionList" 
-                    :selectedElement="selectedElement"
+                    title="Selection list: "
+                    :elementList="selectionList"
                     @elementSelected="elementSelected"
                 />
                 
@@ -376,11 +375,12 @@ export default {
         // switch out old selected element with new one
         elementSelected(element){  
             if(this.selectedElement) 
-                this.selectedElement.elementRef.style.border = "";
+                this.selectedElement.elementRef.style.boxShadow = ""
             
             this.selectedElement = element;
-            this.selectedElement.elementRef.style.border = "2px solid #add8e6";
-        
+
+            this.selectedElement.elementRef.style.boxShadow = "inset 0px 0px 0px 2px #add8e6"
+
             this.shiftFocus(element.elementRef)
         },
 
@@ -472,14 +472,18 @@ export default {
             chevronArrow.style.transform = `rotate(${(curRotation + 180) % 360}deg)`; // Add 180 deg to make the arrow point the other way
         },
 
-        getNumValue(property, returnArray=false){
+        // property - String
+        // returnArray - Boolean
+        // Looks for numbers in string and returns them, if returnArray is true it returns an 
+        //  array of numbers else it returns every value concatenated together
+        getNumValue(stringValue, returnArray=false){
             if(returnArray){
-                return property.match(/\d*/g).reduce((result, value) => {
+                return stringValue.match(/\d*/g).reduce((result, value) => {
                     if(value) result.push(parseInt(value))
                     return result
                 }, [])
             }
-            return parseInt(property.match(/\d*/g).join("")) || 0
+            return parseInt(stringValue.match(/\d*/g).join("")) || 0
         }
     },
     mounted(){
@@ -504,6 +508,9 @@ export default {
 <style lang="scss" scoped>
 @import "./styles/style.scss";
 
+.selected{
+    box-shadow: inset 0px 0px 0px 10px #add8e6;
+}
 .container{
     @include flex(row, center, stretch);
     width: 100%;
@@ -540,7 +547,6 @@ export default {
 
     @include section(30%, $primaryColor);
     @include flex(row, initial, initial);
-    @include boxShadow();
     
     min-width: 18.5rem;
     max-width: 22.5rem;
@@ -573,24 +579,6 @@ export default {
 .elementsCol > .colContent{
     & > *{
         margin-bottom: 1rem;
-    }
-
-    button{
-        width: 100%;
-
-        font-size: 20px;
-        font-weight: bold;
-
-        padding: 0.75rem 0;
-        
-        border-radius: 8px;
-        border: 1px solid $highlightColor;
-        background: $secondaryColor;
-
-        &:hover, &:focus{
-            color: $primaryColor;
-            background: $highlightColor;
-        }
     }
 }
 

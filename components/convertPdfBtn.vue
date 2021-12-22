@@ -1,5 +1,5 @@
 <template>
-    <button @click="postPDFTemplate()"> Convert </button>
+    <button class="primaryButton" @click="postPDFTemplate()"> Convert </button>
 </template>
 
 <script>
