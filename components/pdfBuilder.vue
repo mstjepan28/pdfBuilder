@@ -355,19 +355,19 @@ export default {
         //  selection from editor
         selectElementOnClick(event){
             if(!this.isSelectionFinished) return;
-            const isSelection = event.target.classList.contains("selection")
+            let element = event.target
             
+            if(element.classList.contains("internalComponent")) element = element.parentNode
+
+            const isSelection = element.classList.contains("selection")
             if(!isSelection){
-                if(this.selectedElement) this.selectedElement.elementRef.style.border = "";
+                if(this.selectedElement) this.selectedElement.elementRef.style.boxShadow = "";
                 this.selectedElement = null;
 
                 return;
             };
-            if(event.target.classList.contains("internalComponent")) 
-                elementDom = elementDom.parentNode
 
-            
-            const element = this.getElementFromList(event.target);
+            element = this.getElementFromList(element);
             this.elementSelected(element);
         },
 
