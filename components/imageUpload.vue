@@ -1,5 +1,6 @@
 <template>
     <div
+        :id="id"
         class="imageUploadComponent internalComponent"
         @dragover.prevent="dragOver" 
         @dragleave.prevent="dragLeave"
@@ -13,7 +14,7 @@
             Wrong file type
         </div>
         
-        <img :src="imageSource" alt="uploaded image" v-else-if="imageSource"/>
+        <img v-else-if="imageSource" :src="imageSource" alt="uploaded image"/>
         
         <div v-else-if="!wrongFile">
             Drag and drop an image
@@ -23,6 +24,12 @@
 
 <script>
 export default {
+    props:{
+        id: {
+            type: String,
+            required: true
+        }
+    },
     data(){
         return{
             isDragging: false,
@@ -65,6 +72,7 @@ export default {
         },
 
         setImageURL(imageURL){
+            if(this.imageSource && !imageURL) return;
             this.imageSource = imageURL
         },
 
@@ -81,7 +89,7 @@ export default {
     },
     watch:{
         isDragging(){
-            const dragAndDrop = document.querySelector("div.imageUploadComponent");
+            const dragAndDrop = document.getElementById(this.id);
             if(this.isDragging)
                 dragAndDrop.classList.add("draggingOver")
             else
@@ -89,7 +97,7 @@ export default {
         },
         convertRes(){
             this.resetTimeout = setTimeout(() => this.resetState(), 3000)
-        }
+        },
     }
 }
 </script>

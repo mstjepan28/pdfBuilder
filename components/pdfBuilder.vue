@@ -278,13 +278,11 @@ export default {
         // positionData - { x: num, y: num, width: num, height: num}
         // Set the data-index to the last element of the list and push the selection to the selection list
         saveNewSelection(selection, positionData){
-            selection.dataset.index = this.selectionList.length;
-
             selection.style.pointerEvents = "";
             this.readjustPosition(selection, positionData);
 
             this.selectionList.push({
-                index: this.selectionList.length,
+                id: Date.now() + "" + Math.ceil(Math.random() * 1000),
                 name: "Selection #" + this.selectionList.length,
                 elementRef: selection,
                 positionData: positionData,
@@ -335,13 +333,7 @@ export default {
         //  element can only be deleted once its selected, set the selected element to null
         updateList(element){
             document.getElementById("pdfTemplate").removeChild(element.elementRef);
-            let updatedList = this.selectionList.filter(elem => elem != element);
-
-            updatedList.forEach((elem, i) => {
-                elem.elementRef.dataset.index = i;
-                elem.index = i;
-            });
-            this.selectionList = updatedList;
+            this.selectionList = this.selectionList.filter(elem => elem != element);
 
             this.selectedElement = null;
         },
@@ -378,7 +370,6 @@ export default {
                 this.selectedElement.elementRef.style.boxShadow = ""
             
             this.selectedElement = element;
-
             this.selectedElement.elementRef.style.boxShadow = "inset 0px 0px 0px 2px #add8e6"
 
             this.shiftFocus(element.elementRef)
@@ -402,9 +393,9 @@ export default {
         // elem - html element
         // newData - either (x ,y) or (width, height)
         // Get the element from the list based on the data-index attribute. Replace the old (x ,y) or (width, height) with new ones
-        updatePositionData(elem, newData){
-            const element = this.selectionList[elem.dataset.index];
-            Object.keys(newData).forEach(key => element.positionData[key] = newData[key])
+        updatePositionData(element, newData){
+            const elementObj = this.getElementFromList(element)
+            Object.keys(newData).forEach(key => elementObj.positionData[key] = newData[key])
         },
 
         setPdfTemplate(pdfTemplate, pdfDimensions){

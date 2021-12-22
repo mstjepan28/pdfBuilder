@@ -221,13 +221,6 @@ export default {
             this.positionData.height = this.positionData.height > this.heightDimMax? this.heightDimMax: this.positionData.height;
         },
         
-        moveElementBy(moveBy){
-            if(!this.isMovable) return;
-            
-            this.positionData.x += moveBy.x;
-            this.positionData.y += moveBy.y;
-        },
-
         modifyPositionData(modifyBy){
             if(!this.isMovable) return;
             Object.keys(modifyBy).forEach(key => this.positionData[key] += modifyBy[key]);
@@ -265,7 +258,8 @@ export default {
         updateStaticContent(){
             this.element.staticContent = this.staticContent;
 
-            if(this.elementType == "image") return this.element.internalComponent.setImageURL(this.staticContent);
+            if(this.elementType == "image") 
+                return this.element.internalComponent.setImageURL(this.staticContent);
 
             this.element.elementRef.innerHTML = this.staticContent || "";
         },
@@ -279,14 +273,14 @@ export default {
             this.element.elementRef.appendChild(child)
 
             const imageUploadConstructor = Vue.extend(ImageUpload)
-            const imageUploadInstance = new imageUploadConstructor({})
+            const imageUploadInstance = new imageUploadConstructor({ propsData: { id: this.element.id } })
 
             this.element.internalComponent = imageUploadInstance.$mount(child);
         },
 
         // Destroy the internal component of the selected element and remove it from the DOM 
         destroyComponent(){
-            document.querySelector("div.internalComponent").remove();
+            document.getElementById(this.element.id).remove();
             
             this.element.internalComponent.$destroy();
             this.element.internalComponent = null;
@@ -306,11 +300,11 @@ export default {
         element(){
             if(!this.element) return;
 
+            this.newElementMounted = true;
+
             this.staticContent = this.element.staticContent;
             this.elementType = this.element.type;
             this.positionData = this.element.positionData;
-
-            this.newElementMounted = true;
 
             setTimeout(() => {
                 this.newElementMounted = false;
@@ -321,10 +315,13 @@ export default {
         },
 
         elementType(){
-            if(!this.elementType || this.newElementMounted) return; 
+            if(!this.elementType || this.newElementMounted) return;
             if(this.element.internalComponent) this.destroyComponent();
 
             this.element.type = this.elementType;
+
+            this.staticContent = ""
+            this.element.elementRef.innerHTML = ""
 
             const elementTypeHandler = {
                 image: () => this.elementTypeImage(),

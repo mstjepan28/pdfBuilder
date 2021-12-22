@@ -36,7 +36,10 @@ import axios from "axios";
 
 export default {
     props:{
-        apiUrl: String,
+        apiUrl: {
+            type: String,
+            required: true
+        },
     },
     components:{ LoadingIndicator },
     data(){

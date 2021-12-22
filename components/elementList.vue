@@ -2,8 +2,8 @@
     <div>
         <h2 v-if="title">{{title}}</h2>
         <ul v-if="elementList" class="elementList">
-            <li :key="element.index" :element="element" v-for="element in elementList">
-                <button class="primaryButton" @click="selectElement(element.index)">
+            <li :key="element.id" :element="element" v-for="element in elementList">
+                <button class="primaryButton" @click="selectElement(element)">
                     {{element.name}}
                 </button>
             </li>
@@ -24,8 +24,7 @@ export default {
         },
     },
     methods:{
-        selectElement(index){
-            const element = this.elementList[index];
+        selectElement(element){
             this.$emit("elementSelected", element);
         },
     }
