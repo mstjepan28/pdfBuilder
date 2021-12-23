@@ -52,6 +52,8 @@ export default {
     },
     methods:{
         closeResponseModal(){
+            if(this.resultStatus == "pending") return;
+
             const modal = document.querySelector(".modalBackground");
             modal.style.display = "none";
 

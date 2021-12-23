@@ -15,6 +15,12 @@
 
 <script>
 export default {
+    props:{
+        confirmBeforeDelete: {
+            type: Boolean,
+            required: false,
+        }
+    },
     data(){
         return{
             closeTimeout: null,
@@ -22,6 +28,8 @@ export default {
     },
     methods: {
         openChoices(){
+            if(!this.confirmBeforeDelete) return this.confirmDelete();
+
             const deleteButton = document.querySelector("button.deleteButton");
             if(deleteButton.style.width) 
                 return this.closeChoices();

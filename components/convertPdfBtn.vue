@@ -7,10 +7,23 @@ import axios from "axios";
 
 export default {
     props:{
-        apiUrl: String,
-        selectionList: Array,
-        pdfTemplate: ArrayBuffer,
-        pdfDimensions: Object
+        apiUrl: {
+            type: String,
+            required: true
+        },
+        selectionList: {
+            type: Array,
+            required: true
+        },
+        pdfTemplate: {
+            type: ArrayBuffer,
+            required: false
+
+        },
+        pdfDimensions: {
+            type: Object,
+            required: false
+        }
     },
     methods:{
         async postPDFTemplate(){
@@ -28,6 +41,8 @@ export default {
             data.append("selectionList", blobSelectionList, "selectionList")
             data.append("pdfTemplate", blobPdfTemplate, "pdfTemplate.pdf")
 
+            document.documentElement.style.cursor = "wait"
+
             try{
                 const response = await axios.post(`${this.apiUrl}/postTemplate`, data, {
                     header : {
@@ -35,10 +50,12 @@ export default {
                     }
                 });
                 
-                this.$emit("converterResponse", response.status)
+                this.$emit("converterResponse", response.status);
             }catch(error){
-                this.$emit("converterResponse", 500)
+                this.$emit("converterResponse", 500);
             }
+
+            document.documentElement.style.cursor = "";
         },
 
         openResponseModal(){

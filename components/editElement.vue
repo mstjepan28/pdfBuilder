@@ -86,6 +86,7 @@
 
             <DeleteButton 
                 class="deleteButton"
+                :confirmBeforeDelete="false"
                 @delete="deleteElement"
             />
         </div>
@@ -107,8 +108,14 @@ import Vue from "vue"
 
 export default {
     props:{
-        apiUrl: String,
-        element: Object
+        apiUrl: {
+            type: String,
+            required: true
+        },
+        element: {
+            type: Object,
+            required: false
+        }
     },
     components: { ImageUpload, ToggleSwitch, DeleteButton },
     data(){
@@ -155,12 +162,16 @@ export default {
     },
     methods:{
         async getVariables(){
+            document.documentElement.style.cursor = "wait";
+
             try{
                 const response = await axios.get(`${this.apiUrl}/variables`)
                 this.formatVariables(response.data.variables);
             }catch(error){
-                console.log(error)
+                console.log(error);
             }
+            
+            document.documentElement.style.cursor = "";
         },
 
         formatVariables(variableList){

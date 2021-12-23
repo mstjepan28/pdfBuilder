@@ -11,14 +11,23 @@
 <script>
 export default {
     props: {
-        labels: Array,
-        toggleID: String,
-        isDisabled: Boolean,
+        labels: {
+            type: Array,
+            required: true
+        },
+        toggleID: {
+            type: String,
+            required: false
+        },
+        isDisabled: {
+            type: Boolean,
+            required: true
+        },
     },
     data(){
         return{
-            toggleState: false,
-            toggleEnabled: false,
+            toggleState: false, // current state of the toggle
+            toggleEnabled: false, // can the user interact 
         }
     },
     computed:{

@@ -74,7 +74,10 @@ import interact      from "interactjs";
 
 export default {
     props:{
-        apiUrl: String
+        apiUrl: {
+            type: String,
+            required: true
+        }
     },
     components: { ElementList, EditElement, ConvertPdfBtn, PdfToImage, ResponseModal },
     data(){

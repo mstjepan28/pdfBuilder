@@ -104,10 +104,12 @@ export default {
             const config = { header : {'Content-Type': `multipart/form-data; boundary=${data._boundary}`,} }
             let imageSize = {}
 
+            document.documentElement.style.cursor = "wait";
+
             try{
                 const response = await axios.post(`${this.apiUrl}/convertPdfToImg`, data, config );
+                const pdfTemplate = document.getElementById("pdfTemplate");
                 
-                const pdfTemplate = document.querySelector(".pdfTemplate");
                 pdfTemplate.style.backgroundImage = `url(${response.data.attachment_url})`;
 
                 imageSize = this.getImageSize(response.data.attachment_url);
@@ -118,6 +120,8 @@ export default {
                 this.feedbackMsg = error.response == undefined? "Error: server isn't responding": "Something went wrong"
                 this.convertRes = "fail";
             }
+
+            document.documentElement.style.cursor = "";
 
             this.$emit("pdfUploaded", this.pdfSource, imageSize)
             this.isConverting = false;
