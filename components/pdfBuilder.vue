@@ -6,7 +6,9 @@
 
         <div class="elementsCol">
             <div class="colContent">            
-                <button class="primaryButton" @click="makeSelection()">Make selection</button>
+                <button class="primaryButton" @click="drawSelection()" :class="{activeDrawing: drawHandler}">
+                    {{drawButtonText}}
+                </button>
                 
                 <ConvertPdfBtn 
                     :apiUrl="apiUrl" 
@@ -77,7 +79,8 @@ export default {
     components: { ElementList, EditElement, ConvertPdfBtn, PdfToImage, ResponseModal },
     data(){
         return{
-            isSelectionFinished: true,
+            drawHandler: null,
+
             selectedElement: null,
             selectionList: [],
 
@@ -85,6 +88,11 @@ export default {
             pdfDimensions: null,
 
             zoomValue: 100,
+        }
+    },
+    computed:{
+        drawButtonText(){
+            return this.drawHandler? "Disable drawing": "Enable drawing"
         }
     },
     methods:{
@@ -176,16 +184,23 @@ export default {
         },
 
         /* ------------------------------------------------------------ */
-        
-        makeSelection(){
-            if(!this.isSelectionFinished) return;
-            this.isSelectionFinished = false;
+        disableDrawing(){
+            const pdfTemplate = document.getElementById("pdfTemplate");
 
-            let coordinates = { x: 0, y: 0 };
-            let dimensions = { width: 0, height: 0 };
+            pdfTemplate.removeEventListener("click", this.drawHandler);
+            pdfTemplate.style.cursor = "";
             
-            let selection = "";
-            let selectionStarted = false;
+            this.togglePointerEvents(pdfTemplate, true);
+            this.drawHandler = null;
+        },
+
+        drawSelection(){
+            if(this.drawHandler) return this.disableDrawing();
+
+            let positionData = { x: 0, y: 0, width: 0, height: 0 };
+            
+            let selection = null;
+            let drawingStarted = false;
 
             const thisRef = this;
             const pdfTemplate = document.getElementById("pdfTemplate");
@@ -197,41 +212,35 @@ export default {
             }
 
             function updateSelectionPosition(event){
-                let width  = accountForZoom(event.offsetX) - coordinates.x
-                let height = accountForZoom(event.offsetY) - coordinates.y
+                let width  = accountForZoom(event.offsetX) - positionData.x
+                let height = accountForZoom(event.offsetY) - positionData.y
                 
                 selection.style.left = width < 0? `${width}px` : "";
                 selection.style.top = height < 0? `${height}px`: "";
 
-                width = Math.abs(width);
-                height = Math.abs(height);
+                positionData.width = Math.abs(width);
+                positionData.height = Math.abs(height);
                 
-                selection.style.width  = `${width}px`;
-                selection.style.height = `${height}px`;
-
-                dimensions = { width, height }
+                selection.style.width  = `${positionData.width}px`;
+                selection.style.height = `${positionData.height}px`;
             }
 
-            function makeSelectionHandler(event){
-                if(selectionStarted){
+            this.drawHandler = function (event){
+                if(drawingStarted){
+                    drawingStarted = false;
+
+                    thisRef.saveNewSelection(selection, positionData);
+                    positionData = { x: 0, y: 0, width: 0, height: 0 };
+
                     pdfTemplate.removeEventListener("mousemove", updateSelectionPosition);
-                    selection.classList.add("draggable", "selection");
-
-                    thisRef.togglePointerEvents(pdfTemplate, true);
-                    thisRef.saveNewSelection(selection, {...coordinates, ...dimensions})
-
-                    thisRef.isSelectionFinished = true;
-                    controller.abort(); 
                 }
                 else{
-                    selectionStarted = true;
+                    drawingStarted = true;
                     
-                    coordinates = {
-                        x: accountForZoom(event.offsetX),
-                        y: accountForZoom(event.offsetY),
-                    }
+                    positionData.x = accountForZoom(event.offsetX);
+                    positionData.y = accountForZoom(event.offsetY);
 
-                    selection = thisRef.createSelection(coordinates);
+                    selection = thisRef.createSelection(positionData);
     
                     pdfTemplate.addEventListener('mousemove',  updateSelectionPosition);
                 }
@@ -240,9 +249,9 @@ export default {
             /* ------------------------------------------------------------ */
 
             this.togglePointerEvents(pdfTemplate, false);
+            pdfTemplate.style.cursor = "crosshair"
 
-            const controller = new AbortController(); 
-            pdfTemplate.addEventListener("click", makeSelectionHandler, { signal: controller.signal })
+            pdfTemplate.addEventListener("click", this.drawHandler)
 
             /* ------------------------------------------------------------ */
         },
@@ -254,13 +263,13 @@ export default {
             Array.from(parentElement.children).forEach(child => child.style.pointerEvents = boolValue? "auto": "none")
         },
 
-        // coordinates - { x: num, y: num }
+        // positionData - { x: num, y: num, width: num, height: num}
         // Creates a new div, sets its position to the given coordinates inside parent, sets 
         //  its style and adds it to the dom  
-        createSelection(coordinates){
+        createSelection(positionData){
             const newSelection = document.createElement("div");
             
-            this.setCoordinates(newSelection, coordinates);
+            this.setCoordinates(newSelection, positionData);
 
             newSelection.style.position = "absolute";
             newSelection.style.overflow = "hidden";
@@ -278,7 +287,8 @@ export default {
         // positionData - { x: num, y: num, width: num, height: num}
         // Set the data-index to the last element of the list and push the selection to the selection list
         saveNewSelection(selection, positionData){
-            selection.style.pointerEvents = "";
+            selection.classList.add("draggable", "selection");
+
             this.readjustPosition(selection, positionData);
 
             this.selectionList.push({
@@ -300,30 +310,30 @@ export default {
         },
 
         // element - html element
-        // coordinates - { x: num, y: num }
+        // positionData - { x: num, y: num, width: num, height: num}
         // Calculate the top and left offset into x and y coordinates and update coordinates
-        readjustPosition(element, coordinates){
+        readjustPosition(element, positionData){
             const top = this.getNumValue(element.style.top);
             const left = this.getNumValue(element.style.left);
             const translate = this.getNumValue(element.style.transform, true);
 
-            coordinates.x = translate[0] - left;
-            coordinates.y = translate[1] - top;
+            positionData.x = translate[0] - left;
+            positionData.y = translate[1] - top;
 
-            this.setCoordinates(element, coordinates)
+            this.setCoordinates(element, positionData)
 
             element.style.top = ""
             element.style.left = ""
         },
 
         // element - html element
-        // coordinates - { x: num, y: num }
+        // positionData - { x: num, y: num, width: num, height: num}
         // Set the coordinates of a element
-        setCoordinates(element, coordinates){
-            element.dataset.x = coordinates.x;
-            element.dataset.y = coordinates.y;
+        setCoordinates(element, positionData){
+            element.dataset.x = positionData.x;
+            element.dataset.y = positionData.y;
             
-            element.style.transform = `translate(${coordinates.x}px, ${coordinates.y}px)`;  
+            element.style.transform = `translate(${positionData.x}px, ${positionData.y}px)`;  
         },
 
         /* ------------------------------------------------------------ */
@@ -346,7 +356,7 @@ export default {
         // click on event handler, if clicked on a selection, open selection in editor, else empty 
         //  selection from editor
         selectElementOnClick(event){
-            if(!this.isSelectionFinished) return;
+            if(this.drawHandler) return;
             let element = event.target
             
             if(element.classList.contains("internalComponent")) element = element.parentNode
@@ -433,8 +443,11 @@ export default {
 
                 return;
             }
-            
+
             switch(event.key){
+                case "Escape":
+                    this.disableDrawing();
+                    break;
                 case "ArrowUp":
                     this.modifyPositionData({x: 0, y: -modifyBy, width: 0, height: 0});
                     break;
@@ -502,6 +515,12 @@ export default {
 .selected{
     box-shadow: inset 0px 0px 0px 10px #add8e6;
 }
+
+.activeDrawing{
+    color: $secondaryColor;
+    background: $highlightColor;
+}
+
 .container{
     @include flex(row, center, stretch);
     width: 100%;
