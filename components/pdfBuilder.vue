@@ -1,7 +1,7 @@
 <template>
     <div class="container">
-        <ResponseModal
-            ref="responseModal"
+        <ResponsePopup
+            ref="responsePopup"
         />
 
         <div class="elementsCol">
@@ -15,7 +15,7 @@
                     :selectionList="selectionList" 
                     :pdfTemplate="pdfTemplate" 
                     :pdfDimensions="pdfDimensions"
-                    @converterResponse="converterResponse"
+                    @converterResponse="openResponsePopup"
                 />
 
                 <PdfToImage 
@@ -25,6 +25,8 @@
 
                 <label for="zoomValue">Zoom value: </label>
                 <input id="zoomValue" type="range" min="1" max="200" v-model="zoomValue">
+
+                <button class="primaryButton" @click="togglePopup()">Toggle popup</button>
             </div>
 
             <div class="toggleColumn">
@@ -68,7 +70,7 @@ import ElementList   from "./elementList.vue";
 import EditElement   from "./editElement.vue";
 import ConvertPdfBtn from "./convertPdfBtn.vue"
 import PdfToImage    from "./pdfToImage.vue";
-import ResponseModal from "./responseModal.vue";
+import ResponsePopup from "./responsePopup.vue";
 
 import interact      from "interactjs";
 
@@ -79,7 +81,7 @@ export default {
             required: true
         }
     },
-    components: { ElementList, EditElement, ConvertPdfBtn, PdfToImage, ResponseModal },
+    components: { ElementList, EditElement, ConvertPdfBtn, PdfToImage, ResponsePopup },
     data(){
         return{
             drawHandler: null,
@@ -152,7 +154,8 @@ export default {
             const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy
 
             // update position data of object
-            this.updatePositionData(target, {x, y})
+            if(!target.classList.contains("pdfTemplate")) 
+                this.updatePositionData(target, {x, y})
             target.style.transform = `translate(${x}px, ${y}px)`
 
             // update the position attributes
@@ -162,6 +165,8 @@ export default {
 
         resizeHandler(event) {
             const target = event.target;
+
+            if(target.classList.contains("pdfTemplate")) return;
 
             // Get the previous coordinates of the object
             let x = (parseFloat(target.getAttribute('data-x')) || 0)
@@ -416,8 +421,8 @@ export default {
             this.pdfDimensions = pdfDimensions
         },
 
-        converterResponse(resultStatus){
-            this.$refs.responseModal.setStatus(resultStatus);
+        openResponsePopup(resultStatus, customSuccessMsg=null){
+            this.$refs.responsePopup.setResponseData(resultStatus, customSuccessMsg);
         },
 
         modifyPositionData(modifyBy){
@@ -491,6 +496,10 @@ export default {
                 }, [])
             }
             return parseInt(stringValue.match(/\d*/g).join("")) || 0
+        },
+
+        togglePopup(){
+            this.$refs.responsePopup.openPopup();
         }
     },
     mounted(){
@@ -520,8 +529,13 @@ export default {
 }
 
 .activeDrawing{
-    color: $secondaryColor;
-    background: $highlightColor;
+    color: $primaryColor;
+    background: $blueHighlight;
+
+    &:hover, &:focus{
+        color: $primaryColor;
+        background: $blueHighlight;
+    }
 }
 
 .container{
@@ -611,6 +625,10 @@ export default {
     &.elementsCol>.colContent{
         transition: 0.4s;
     }
+}
+
+@media only screen and (max-width: 1080px) {
+    
 }
 
 </style>

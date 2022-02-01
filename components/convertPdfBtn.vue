@@ -1,9 +1,21 @@
 <template>
-    <button class="primaryButton" @click="postPDFTemplate()"> Convert </button>
+    <button class="primaryButton" :class="{progress: isProcessing}" @click="postPDFTemplate()" :disabled="isProcessing"> 
+        <div v-if="isProcessing" class="progress">
+            <LoadingIndicator 
+                id="convertingIndicator" 
+                size="30px" 
+                thickness="5px"
+                color="255, 255, 255"
+            />
+        </div>
+        <div v-else>Convert</div>
+    </button>
 </template>
 
 <script>
 import axios from "axios";
+
+import LoadingIndicator from "./LoadingIndicator.vue";
 
 export default {
     props:{
@@ -25,9 +37,16 @@ export default {
             required: false
         }
     },
+    components: { LoadingIndicator },
+    data(){
+        return{
+            isProcessing: false,
+        }
+    },
     methods:{
         async postPDFTemplate(){
-            this.openResponseModal();
+            if(this.isProcessing) return;
+            this.isProcessing = true;
 
             const selectionList = this.filterList();
             const pdfDimensions = this.pdfDimensions || {width: 596, height: 842}
@@ -56,11 +75,7 @@ export default {
             }
 
             document.documentElement.style.cursor = "";
-        },
-
-        openResponseModal(){
-            const modal = document.querySelector(".modalBackground");
-            modal.style.display = "flex";
+            this.isProcessing = false;
         },
 
         // Filter data od list elements so it contains only relevant data
@@ -100,7 +115,36 @@ export default {
         getStaticContent(element){
             if(!element.internalComponent) return element.staticContent || false;
             return element.internalComponent.getImageSource();
-        }   
+        },
+        
+        
     }
 }
 </script>
+
+<style lang="scss">
+@import "./styles/style.scss";
+
+.primaryButton{
+    min-height: 45px;
+    max-height: 45px;
+}
+
+button.primaryButton.progress{
+    cursor: initial !important;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0;
+
+    color: $secondaryColor;
+    background: $blueHighlight;
+
+    &:hover{
+        background: $blueHighlight;
+    }
+}
+    
+</style>

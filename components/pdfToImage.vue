@@ -7,7 +7,8 @@
 
         :class="{
             success: convertRes == 'success',
-            fail: convertRes == 'fail'
+            fail: convertRes == 'fail',
+            processing: isConverting
         }"
     >
         <div v-if="wrongFile">
@@ -18,6 +19,7 @@
                 id="pdfToImgLoading" 
                 size="64px" 
                 thickness="8px"
+                color="255, 255, 255"
             />
         </div>
         <div v-else-if="!isConverting && convertRes">
@@ -194,17 +196,19 @@ export default {
     }
 }
 
-.draggingOver{
+.draggingOver, .processing{
     color: $primaryColor;
-    background: $highlightColor;
+    background: $blueHighlight;
 }
 
 .success{
-    background: rgba($greenHighlight, 0.25)
+    color: $primaryColor;
+    background: $greenHighlight;
 }
 
 .fail{
-    background: rgba($redHighlight, 0.25)
+    color: $primaryColor;
+    background: $redHighlight;
 }
 
 </style>

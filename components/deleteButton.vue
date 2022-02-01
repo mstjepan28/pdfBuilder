@@ -77,6 +77,8 @@ button, button:hover, button:focus{
         font-weight: bold;
         color: $primaryColor;
 
+        cursor: pointer;
+
         position: absolute;
         top: 0;
         bottom: 0;
@@ -94,9 +96,11 @@ button, button:hover, button:focus{
         width: 40%;
         margin-left: auto;
 
-        &>button{
+        & > button{
             @include flex(row, center, center);
             width: 100%;
+
+            cursor: pointer;
 
             background: none;
 

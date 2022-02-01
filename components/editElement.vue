@@ -86,7 +86,7 @@
 
             <DeleteButton 
                 class="deleteButton"
-                :confirmBeforeDelete="false"
+                :confirmBeforeDelete="true"
                 @delete="deleteElement"
             />
         </div>

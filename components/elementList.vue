@@ -50,6 +50,7 @@ export default {
 
     & > li{
         @include flex(row, center, center);
+        overflow: hidden;
     }
 }
 

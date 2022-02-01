@@ -16,17 +16,23 @@ export default {
         thickness: {
             type: String,
             required: false,
-        }
+        },
+        color: {
+            type: String,
+            required: false
+        },
     },
     methods:{
         setValues(){
             if(!this.id) return;
 
+            console.log(this.size, this.thickness, this.color)
+
             const spinner = document.getElementById(this.id);
-            if(this.size) 
-                spinner.style.setProperty("--size", this.size)
-            if(this.thickness) 
-                spinner.style.setProperty("--thickness", this.thickness)
+
+            spinner.style.setProperty("--size", this.size? this.size: "120px")
+            spinner.style.setProperty("--thickness", this.thickness? this.thickness: "12px")
+            spinner.style.setProperty("--spinnerColor", this.color? this.color: "0, 0, 0")
         }
     },
     mounted() {
@@ -42,12 +48,13 @@ export default {
 .loading{
     --size: 120px;
     --thickness: 12px;
+    --spinnerColor: 0, 0, 0;
 
     width: var(--size);
     height: var(--size);
 
     border-radius: 100%;
-    border: var(--thickness) solid rgba(0,0,0,.2);
+    border: var(--thickness) solid rgba(var(--spinnerColor),.2);
 
     animation: spinning 2s infinite linear;
 
@@ -63,7 +70,7 @@ export default {
         left: calc(var(--thickness) * -1);
         top: calc(var(--thickness) * -1);
         
-        border-top:    var(--thickness) solid rgba(0,0,0,.8);
+        border-top:    var(--thickness) solid rgba(var(--spinnerColor),.8);
         border-left:   var(--thickness) solid transparent;
         border-bottom: var(--thickness) solid transparent;
         border-right:  var(--thickness) solid transparent;

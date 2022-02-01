@@ -11,6 +11,10 @@ label, input[type=checkbox], input[type=radio]{
     cursor: pointer;
 }
 
+button{
+    cursor: pointer;
+}
+
 input, input:hover, input:focus,
 textarea, textarea:hover, textarea:focus{
     border: none;

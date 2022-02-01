@@ -79,7 +79,7 @@ export default {
 
 $primary: $primaryColor;
 $secondary: $secondaryColor;
-$active: $greenHighlight;
+$active: $blueHighlight;
 $disabled: $highlightColor;
 // *************************** //
 
