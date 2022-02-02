@@ -132,11 +132,12 @@ export default {
 
 .draggingOver{
     color: $primaryColor;
-    background: $highlightColor;
+    background: $blueHighlight;
 }
 
 .fail{
-    background: rgba($redHighlight, 0.25)
+    color: $primaryColor;
+    background: $redHighlight
 }
 
 </style>

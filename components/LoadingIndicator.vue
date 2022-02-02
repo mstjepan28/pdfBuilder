@@ -26,8 +26,6 @@ export default {
         setValues(){
             if(!this.id) return;
 
-            console.log(this.size, this.thickness, this.color)
-
             const spinner = document.getElementById(this.id);
 
             spinner.style.setProperty("--size", this.size? this.size: "120px")

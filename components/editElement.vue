@@ -229,10 +229,12 @@ export default {
                 this.positionData[key] = value;
             });
 
-            this.positionData.x = this.positionData.x > this.xCordMax? this.xCordMax: this.positionData.x;
-            this.positionData.y = this.positionData.y > this.yCordMax? this.yCordMax: this.positionData.y;
-            this.positionData.width = this.positionData.width > this.widthDimMax? this.widthDimMax: this.positionData.width;
-            this.positionData.height = this.positionData.height > this.heightDimMax? this.heightDimMax: this.positionData.height;
+            const  clamp = (num, min, max) => Math.min(Math.max(num, min), max);
+            
+            this.positionData.x = clamp(this.positionData.x, 0, this.xCordMax);
+            this.positionData.y = clamp(this.positionData.y, 0, this.yCordMax);
+            this.positionData.width = clamp(this.positionData.width, 0, this.widthDimMax);
+            this.positionData.height = clamp(this.positionData.height, 0, this.heightDimMax);
         },
         
         modifyPositionData(modifyBy){
@@ -259,6 +261,9 @@ export default {
         // ************************************************************ //
 
         toggleStaticContent(newElement=null){
+            if(this.element.internalComponent) 
+                this.destroyComponent();
+            
             const internalState = this.$refs.staticToggle.toggleState
 
             if(this.element.isStatic == internalState) 
@@ -267,6 +272,9 @@ export default {
                 this.$refs.staticToggle.changeState(true);
             else
                 this.element.isStatic = internalState;
+
+            if(this.elementType == "image" && this.element.isStatic) 
+                this.elementTypeImage();
         },
 
         updateStaticContent(){
@@ -283,6 +291,8 @@ export default {
         // Dynamically create an instance of the ImageUpload component and mount it as a child
         //  of the selected element
         elementTypeImage(){
+            if(!this.element.isStatic) return;
+
             const child = document.createElement("div");
             this.element.elementRef.appendChild(child)
 
@@ -365,10 +375,9 @@ export default {
 @import "./styles/style.scss";
 
 .activeType{
-    color: $secondaryColor;
-    background: $highlightColor !important;
+    color: $primaryColor;
+    background: $blueHighlight !important;
 }
-
 
 h2{
     margin-top: 1rem;

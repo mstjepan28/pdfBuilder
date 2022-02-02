@@ -14,7 +14,7 @@
     background: $secondaryColor;
 
     &:hover, &:focus{
-        color: $secondaryColor;
+        color: $primaryColor;
         background: $highlightColor
     }
 }
