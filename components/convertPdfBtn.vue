@@ -69,9 +69,10 @@ export default {
                     }
                 });
                 
-                this.$emit("converterResponse", response.status);
+                this.$emit("openResponse", response.status);
             }catch(error){
-                this.$emit("converterResponse", 500);
+                const status = error.message == "Network Error"? 408: 500;
+                this.$emit("openResponse", status);
             }
 
             document.documentElement.style.cursor = "";

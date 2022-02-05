@@ -168,7 +168,8 @@ export default {
                 const response = await axios.get(`${this.apiUrl}/variables`)
                 this.formatVariables(response.data.variables);
             }catch(error){
-                console.log(error);
+                const status = error.message == "Network Error"? 408: 500;
+                this.$emit("openResponse", status);
             }
             
             document.documentElement.style.cursor = "";

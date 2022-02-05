@@ -15,13 +15,15 @@
                     :selectionList="selectionList" 
                     :pdfTemplate="pdfTemplate" 
                     :pdfDimensions="pdfDimensions"
-                    @converterResponse="openResponsePopup"
+                    @openResponse="openResponsePopup"
                 />
 
                 <PdfToImage 
                     :apiUrl="apiUrl" 
                     @pdfUploaded="setPdfTemplate"
                 />
+
+                <button class="primaryButton" @click="togglePopup()">Debug: Open popup</button>
 
             </div>
 
@@ -55,6 +57,7 @@
                     :apiUrl="apiUrl" 
                     :element="selectedElement" 
                     @deleteElement="updateList"
+                    @openResponse="openResponsePopup"
                 />
             </div>
         </div>
@@ -87,8 +90,6 @@ export default {
 
             pdfTemplate: null,
             pdfDimensions: null,
-
-            zoomValue: 100,
         }
     },
     computed:{
@@ -140,29 +141,9 @@ export default {
                 },
 
             })
-
-            interact('.pdfTemplateDrag')
-            .draggable({
-                inertia: false,
-                
-                modifiers: [
-                    interact.modifiers.snap({
-                        targets: [
-                            interact.snappers.grid({ x: 10, y: 10 })
-                        ],
-                        range: Infinity,
-                        relativePoints: [ { x: 0, y: 0 } ]
-                    }),
-                ],
-
-                listeners: {
-                    move: (event) => thisRef.dragMoveListener(event),
-                },
-
-            })
         },
         
-        dragMoveListener (event) {
+        dragMoveListener(event){
             const target = event.target;
             
             // keep the dragged position in the data-x/data-y attributes
@@ -170,20 +151,15 @@ export default {
             const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy
 
             // update position data of object
-            if(target.classList.contains("pdfTemplate")){
-                target.style.transform = `translate(${x}px, ${y}px) scale(${this.zoomValue}%)`
-            }
-            else{
-                this.updatePositionData(target, {x, y})
-                target.style.transform = `translate(${x}px, ${y}px)`
-            }
+            this.updatePositionData(target, {x, y})
+            target.style.transform = `translate(${x}px, ${y}px)`
 
             // update the position attributes
             target.setAttribute('data-x', x)
             target.setAttribute('data-y', y)
         },
 
-        resizeHandler(event) {
+        resizeHandler(event){
             const target = event.target;
 
             if(target.classList.contains("pdfTemplate")) return;
@@ -217,7 +193,6 @@ export default {
 
             pdfTemplate.removeEventListener("click", this.drawHandler);
             pdfTemplate.style.cursor = "";
-            pdfTemplate.classList.add("pdfTemplateDrag");
             
             this.togglePointerEvents(pdfTemplate, true);
             this.drawHandler = null;
@@ -236,13 +211,9 @@ export default {
 
             /* ------------------------------------------------------------ */
 
-            function accountForZoom(mouseCord){
-                return Math.trunc(mouseCord / (thisRef.zoomValue / 100))
-            }
-
             function updateSelectionPosition(event){
-                let width  = accountForZoom(event.offsetX) - positionData.x
-                let height = accountForZoom(event.offsetY) - positionData.y
+                let width  = event.offsetX - positionData.x
+                let height = event.offsetY - positionData.y
                 
                 selection.style.left = width < 0? `${width}px` : "";
                 selection.style.top = height < 0? `${height}px`: "";
@@ -266,8 +237,8 @@ export default {
                 else{
                     drawingStarted = true;
                     
-                    positionData.x = accountForZoom(event.offsetX);
-                    positionData.y = accountForZoom(event.offsetY);
+                    positionData.x = event.offsetX;
+                    positionData.y = event.offsetY;
 
                     selection = thisRef.createSelection(positionData);
     
@@ -279,7 +250,6 @@ export default {
 
             this.togglePointerEvents(pdfTemplate, false);
             pdfTemplate.style.cursor = "crosshair";
-            pdfTemplate.classList.remove("pdfTemplateDrag");
 
             pdfTemplate.addEventListener("click", this.drawHandler)
 
@@ -443,8 +413,8 @@ export default {
             this.pdfDimensions = pdfDimensions
         },
 
-        openResponsePopup(resultStatus, customSuccessMsg=null){
-            this.$refs.responsePopup.setResponseData(resultStatus, customSuccessMsg);
+        openResponsePopup(resultStatus, customMsg=null){
+            this.$refs.responsePopup.setResponseData(resultStatus, customMsg);
         },
 
         modifyPositionData(modifyBy){
@@ -493,10 +463,6 @@ export default {
             }
         },
 
-        zoomInOut(event) {
-            this.zoomValue += event.deltaY * -0.1;
-        },
-
         toggleColumn(columnSelector){
             const column = document.querySelector(`div.${columnSelector}`)
             if(column.classList.contains("shrinkElement")) 
@@ -531,30 +497,12 @@ export default {
     },
     mounted(){
         this.interaction();
-
-        //document.addEventListener('wheel', this.zoomInOut);
         document.addEventListener('keydown', this.keyboardSupport);
         document.getElementById("pdfTemplate").addEventListener("click", this.selectElementOnClick)
     },
     beforeDestroy(){
-        //document.removeEventListener('wheel', this.zoomInOut);
         document.removeEventListener('keydown', this.keyboardSupport);
         document.removeEventListener("click", this.selectElementOnClick);
-    },
-    watch:{
-        zoomValue(){
-            return;
-
-            const  clamp = (num, min, max) => Math.min(Math.max(num, min), max);
-            this.zoomValue = clamp(this.zoomValue, 25, 175);
-
-            const pdfTemplate = document.getElementById("pdfTemplate");
-            
-            const x = parseFloat(pdfTemplate.getAttribute('data-x')) || 0
-            const y = parseFloat(pdfTemplate.getAttribute('data-y')) || 0
-
-            pdfTemplate.style.transform = `translate(${x}px, ${y}px) scale(${this.zoomValue}%)`
-        }
     },
 }
 </script>

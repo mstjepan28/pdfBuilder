@@ -1,5 +1,5 @@
 <template>
-    <div class="errorPopup" @click="closePopup()">
+    <div class="errorPopup">
         <div class="feedbackWrapper"
             :class="{
                 fail: requestResult == 'fail',
@@ -8,6 +8,10 @@
         >
             {{feedbackMsg}}
         </div>
+
+        <button type="button" class="closeButton" @click="closePopup()">
+            <img src="./svg/FailIndicator.svg" alt="Close button">
+        </button>
     </div>
 </template>
 
@@ -19,7 +23,7 @@ export default {
             closeTimeout: null,
 
             statusCode: "",
-            customSuccessMsg: "",
+            customMsg: "",
         }
     },
     computed:{
@@ -49,6 +53,7 @@ export default {
                 415: "Unsupported Media Type",
                 416: "Requested Range Not Satisfiable",
                 417: "Expectation Failed",
+                
                 500: "Internal Server Error",
                 501: "Not Implemented",
                 502: "Bad Gateway",
@@ -58,13 +63,13 @@ export default {
                 511: "Network Authentication Required",
             }
             const message = statusHandler[this.statusCode] || "Successfully generated PDF files!"
-            return this.customSuccessMsg? this.customSuccessMsg: message;
+            return this.customMsg? this.customMsg: message;
         }
     },
     methods:{
-        setResponseData(newResult, customSuccessMsg){
+        setResponseData(newResult, customMsg){
             this.statusCode = newResult;
-            this.customSuccessMsg = customSuccessMsg;
+            this.customMsg = customMsg;
             this.openPopup();
         },
 
@@ -74,7 +79,7 @@ export default {
             popup.classList.add("slideDown");
             popup.classList.remove("slideUp");
 
-            if(!this.closeTimeout) setTimeout(() => this.closePopup(), 5000)
+            //if(!this.closeTimeout) setTimeout(() => this.closePopup(), 5000)
         },
         closePopup(){
             if(this.closeTimeout){
@@ -134,6 +139,23 @@ $animationDuration: 0.4s;
         color: $primaryColor;
 
         border-radius: 8px;
+    }
+
+    & > .closeButton{
+        position: absolute;
+        top: 6px;
+        right: 6px;
+
+        border: none;
+        background: none;
+
+        img{
+            $closeButton-Size: 12px;
+            width: $closeButton-Size;
+            height: $closeButton-Size;
+
+            filter: brightness(0) saturate(100%) invert(100%);
+        }
     }
 }
 
